@@ -1,0 +1,42 @@
+{
+  "appointments": [
+    {
+      "appointmentId": "apt_001",
+      "userId": "usr_001",
+      "doctorId": "doc_001",
+      "appointment_date": "2025-05-08T10:00:00Z",
+      "status": "booked",
+      "category": "skincare",
+      "sub_category": "facial",
+      "patient_gps_location": {
+        "latitude": 19.0760,
+        "longitude": 72.8777
+      },
+      "doctor_gps_location": {
+        "latitude": 19.0760,
+        "longitude": 72.8777
+      },
+      "created_at": "2025-05-01T10:00:00Z",
+      "updated_at": "2025-05-07T02:41:02Z"
+    },
+    {
+      "appointmentId": "apt_002",
+      "userId": "usr_001",
+      "doctorId": "doc_001",
+      "appointment_date": "2025-05-15T14:30:00Z",
+      "status": "booked",
+      "category": "haircare",
+      "sub_category": "hair_treatment",
+      "patient_gps_location": {
+        "latitude": 19.0760,
+        "longitude": 72.8777
+      },
+      "doctor_gps_location": {
+        "latitude": 19.0760,
+        "longitude": 72.8777
+      },
+      "created_at": "2025-05-01T11:00:00Z",
+      "updated_at": "2025-05-07T02:41:02Z"
+    }
+  ]
+}

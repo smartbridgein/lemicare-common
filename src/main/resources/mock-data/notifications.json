@@ -1,0 +1,30 @@
+{
+  "notifications": [
+    {
+      "notificationId": "notif_001",
+      "userId": "usr_001",
+      "message": "Your appointment is scheduled for tomorrow at 10:00 AM",
+      "type": "appointment",
+      "status": "sent",
+      "gps_location": {
+        "latitude": 19.0760,
+        "longitude": 72.8777
+      },
+      "created_at": "2025-05-07T02:41:02Z",
+      "updated_at": "2025-05-07T02:41:02Z"
+    },
+    {
+      "notificationId": "notif_002",
+      "userId": "usr_001",
+      "message": "Your order has been shipped",
+      "type": "order",
+      "status": "delivered",
+      "gps_location": {
+        "latitude": 19.0760,
+        "longitude": 72.8777
+      },
+      "created_at": "2025-05-01T10:00:00Z",
+      "updated_at": "2025-05-07T02:41:02Z"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "payments": [
+    {
+      "paymentId": "pay_001",
+      "orderId": "ord_001",
+      "amount": 1999.98,
+      "payment_gateway": "razorpay",
+      "status": "pending",
+      "transaction_id": "rzp_test_1234567890",
+      "payment_date": "2025-05-07T02:41:02Z",
+      "updated_at": "2025-05-07T02:41:02Z"
+    },
+    {
+      "paymentId": "pay_002",
+      "orderId": "ord_002",
+      "amount": 1499.99,
+      "payment_gateway": "stripe",
+      "status": "completed",
+      "transaction_id": "stripe_test_1234567890",
+      "payment_date": "2025-05-01T10:00:00Z",
+      "updated_at": "2025-05-07T02:41:02Z"
+    }
+  ]
+}

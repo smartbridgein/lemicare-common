@@ -1,0 +1,46 @@
+{
+  "orders": [
+    {
+      "orderId": "ord_001",
+      "userId": "usr_001",
+      "productId": "prod_001",
+      "quantity": 2,
+      "total_price": 1999.98,
+      "status": "pending",
+      "payment_status": "pending",
+      "shipping_address": {
+        "street": "123 Main Street",
+        "city": "Mumbai",
+        "state": "Maharashtra",
+        "zip_code": "400001"
+      },
+      "gps_location": {
+        "latitude": 19.0760,
+        "longitude": 72.8777
+      },
+      "created_at": "2025-05-07T02:41:02Z",
+      "updated_at": "2025-05-07T02:41:02Z"
+    },
+    {
+      "orderId": "ord_002",
+      "userId": "usr_001",
+      "productId": "prod_002",
+      "quantity": 1,
+      "total_price": 1499.99,
+      "status": "shipped",
+      "payment_status": "paid",
+      "shipping_address": {
+        "street": "123 Main Street",
+        "city": "Mumbai",
+        "state": "Maharashtra",
+        "zip_code": "400001"
+      },
+      "gps_location": {
+        "latitude": 19.0760,
+        "longitude": 72.8777
+      },
+      "created_at": "2025-05-01T10:00:00Z",
+      "updated_at": "2025-05-07T02:41:02Z"
+    }
+  ]
+}

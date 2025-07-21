@@ -1,0 +1,37 @@
+{
+  "analytics": [
+    {
+      "eventId": "evt_001",
+      "userId": "usr_001",
+      "event_type": "appointment_booked",
+      "event_data": {
+        "appointmentId": "apt_001",
+        "doctorId": "doc_001",
+        "category": "skincare",
+        "sub_category": "facial"
+      },
+      "created_at": "2025-05-07T02:41:02Z"
+    },
+    {
+      "eventId": "evt_002",
+      "userId": "usr_001",
+      "event_type": "order_placed",
+      "event_data": {
+        "orderId": "ord_001",
+        "productId": "prod_001",
+        "amount": 1999.98
+      },
+      "created_at": "2025-05-07T02:41:02Z"
+    },
+    {
+      "eventId": "evt_003",
+      "userId": "usr_001",
+      "event_type": "sign_up",
+      "event_data": {
+        "registration_source": "mobile_app",
+        "user_type": "patient"
+      },
+      "created_at": "2025-01-01T10:00:00Z"
+    }
+  ]
+}

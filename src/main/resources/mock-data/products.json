@@ -1,0 +1,28 @@
+{
+  "products": [
+    {
+      "productId": "prod_001",
+      "name": "Advanced Facial Cream",
+      "category": "skincare",
+      "description": "Premium facial cream for all skin types",
+      "price": 999.99,
+      "stock_quantity": 100,
+      "image_url": "https://storage.googleapis.com/cosmicdoc-app/products/prod_001.jpg",
+      "amount": 999.99,
+      "created_at": "2025-01-01T10:00:00Z",
+      "updated_at": "2025-05-07T02:41:02Z"
+    },
+    {
+      "productId": "prod_002",
+      "name": "Hair Growth Serum",
+      "category": "haircare",
+      "description": "Advanced formula for promoting hair growth",
+      "price": 1499.99,
+      "stock_quantity": 50,
+      "image_url": "https://storage.googleapis.com/cosmicdoc-app/products/prod_002.jpg",
+      "amount": 1499.99,
+      "created_at": "2025-01-01T10:00:00Z",
+      "updated_at": "2025-05-07T02:41:02Z"
+    }
+  ]
+}
