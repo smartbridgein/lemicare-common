@@ -66,6 +66,13 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>${jackson.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.github.f4b6a3</groupId>
+            <artifactId>ulid-creator</artifactId>
+            <version>5.2.0</version> <!-- Use a recent version -->
+        </dependency>
+
     </dependencies>
 
     <build>
