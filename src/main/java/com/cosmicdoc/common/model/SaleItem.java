@@ -5,13 +5,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class SaleItem {
     private String medicineId;
-    private String batchNo; // The batch this was sold from
+    //private String batchNo; // The batch this was sold from
+    private List<BatchAllocation> batchAllocations;
     private int quantity;
     private double salePrice; // Per unit
     private double discountAmount;

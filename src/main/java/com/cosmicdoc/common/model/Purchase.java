@@ -62,6 +62,10 @@ public class Purchase {
     private double dueAmount;
     private PaymentStatus paymentStatus; // PENDING, PARTIALLY_PAID, PAID
 
+    private AdjustmentType overallAdjustmentType;
+    private double overallAdjustmentValue;
+    private double calculatedOverallAdjustmentAmount; // The final monetary value of the adjustment
+
     private List<PurchaseItem> items;
 }
 
