@@ -36,4 +36,6 @@ public class Medicine {
    private Double unitPrice; // Standard selling price
 
     private String status; // "ACTIVE" or "INACTIVE"
+
+    private int quantityInStock;
 }

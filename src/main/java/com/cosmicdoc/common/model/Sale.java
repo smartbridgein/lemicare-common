@@ -44,6 +44,10 @@ public class Sale {
     private GstType gstType; //
 
     private List<SaleItem> items;
+
+    private AdjustmentType overallAdjustmentType;
+    private double overallAdjustmentValue;
+    private double calculatedOverallAdjustmentAmount;
 }
 
 

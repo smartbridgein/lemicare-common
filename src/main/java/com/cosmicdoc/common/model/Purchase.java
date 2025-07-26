@@ -30,6 +30,7 @@ public class Purchase {
     private String branchId;
 
     private String supplierId;
+    private String supplierName;
     private Timestamp invoiceDate;
     private String referenceId;
 

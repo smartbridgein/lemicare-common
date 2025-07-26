@@ -20,6 +20,7 @@ public class PurchaseReturn {
     private String organizationId;
     private String branchId;
     private String supplierId;
+    private String supplierName;
     private Timestamp returnDate;
     private String originalPurchaseId; // Link to the original purchase for traceability
     private String reason;
