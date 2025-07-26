@@ -11,4 +11,5 @@ public interface PurchaseReturnRepository  {
     Optional<PurchaseReturn> findById(String organizationId, String branchId, String purchaseReturnId);
     void saveInTransaction(Transaction transaction, String organizationId, String branchId, PurchaseReturn purchaseReturn);
     List<PurchaseReturn> findAllByBranchId(String organizationId, String branchId);
+    List<PurchaseReturn> findAllBySupplierId(String organizationId, String branchId, String supplierId);
 }

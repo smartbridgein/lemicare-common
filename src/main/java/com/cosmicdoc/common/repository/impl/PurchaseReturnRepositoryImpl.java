@@ -2,10 +2,7 @@ package com.cosmicdoc.common.repository.impl;
 
 import com.cosmicdoc.common.model.PurchaseReturn;
 import com.cosmicdoc.common.repository.PurchaseReturnRepository;
-import com.google.cloud.firestore.CollectionReference;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.Transaction;
-import com.google.cloud.firestore.WriteBatch;
+import com.google.cloud.firestore.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -63,6 +60,32 @@ public class PurchaseReturnRepositoryImpl implements PurchaseReturnRepository {
 
         }
     }
+    /**
+     * Implementation for finding all purchase returns for a specific supplier.
+     */
+    @Override
+    public List<PurchaseReturn> findAllBySupplierId(String organizationId, String branchId, String supplierId) {
+        try {
+            // 1. Get a reference to the specific branch's 'purchasereturns' sub-collection.
+            CollectionReference returnsCollection = getCollection(organizationId, branchId);
+
+            // 2. Build the query to find all documents where the 'supplierId' field matches.
+            //    We also order by date to provide a chronological list.
+            Query query = returnsCollection
+                    .whereEqualTo("supplierId", supplierId)
+                    .orderBy("returnDate", Query.Direction.DESCENDING); // Newest first
+
+            // 3. Execute the query and map the results to PurchaseReturn objects.
+            return query.get().get().getDocuments().stream()
+                    .map(doc -> doc.toObject(PurchaseReturn.class))
+                    .collect(Collectors.toList());
+
+        } catch (InterruptedException | ExecutionException e) {
+            // In a production app, log this error properly.
+            throw new RuntimeException("Error finding all purchase returns for supplier: " + supplierId, e);
+        }
+    }
+
   }
 
 

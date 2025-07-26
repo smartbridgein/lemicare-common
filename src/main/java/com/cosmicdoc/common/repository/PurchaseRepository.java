@@ -27,4 +27,5 @@ public interface PurchaseRepository  {
             throws ExecutionException, InterruptedException;
 
     void deleteByIdInTransaction(Transaction transaction, String orgId, String branchId, String purchaseId);
+    List<Purchase> findAllBySupplierId(String organizationId, String branchId, String supplierId);
 }

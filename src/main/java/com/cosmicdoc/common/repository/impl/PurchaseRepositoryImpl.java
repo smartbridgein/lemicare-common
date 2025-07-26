@@ -131,4 +131,27 @@ public class PurchaseRepositoryImpl implements PurchaseRepository {
         DocumentReference docRef = getCollection(orgId, branchId).document(purchaseId);
         transaction.delete(docRef);
     }
+
+    @Override
+    public List<Purchase> findAllBySupplierId(String organizationId, String branchId, String supplierId) {
+        try {
+            // 1. Get a reference to the specific branch's 'purchases' sub-collection.
+            CollectionReference purchasesCollection = getCollection(organizationId, branchId);
+
+            // 2. Build the query to find all documents where the 'supplierId' field matches.
+            //    We also order by date to provide a sensible, chronological list.
+            Query query = purchasesCollection
+                    .whereEqualTo("supplierId", supplierId)
+                    .orderBy("invoiceDate", Query.Direction.DESCENDING); // Newest first
+
+            // 3. Execute the query and map the results to Purchase objects.
+            return query.get().get().getDocuments().stream()
+                    .map(doc -> doc.toObject(Purchase.class))
+                    .collect(Collectors.toList());
+
+        } catch (InterruptedException | ExecutionException e) {
+            // In a production app, log this error properly.
+            throw new RuntimeException("Error finding all purchases for supplier: " + supplierId, e);
+        }
+    }
 }
