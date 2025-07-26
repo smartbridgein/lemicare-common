@@ -25,11 +25,13 @@ public class Sale {
     // For PRESCRIPTION sales
     private String patientId;
     private String doctorId;
+    private String doctorName;
     private Timestamp prescriptionDate;
 
     // For OTC sales
     private String walkInCustomerName;
     private String walkInCustomerMobile;
+
 
     // Financials
     private double totalTaxableAmount;
@@ -48,6 +50,9 @@ public class Sale {
     private AdjustmentType overallAdjustmentType;
     private double overallAdjustmentValue;
     private double calculatedOverallAdjustmentAmount;
+    private String address;
+    private String gender;
+    private int age;
 }
 
 
