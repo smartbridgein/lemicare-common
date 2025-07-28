@@ -1,6 +1,7 @@
 package com.cosmicdoc.common.repository;
 
 import com.cosmicdoc.common.model.MedicineBatch;
+import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Transaction;
 
 import java.util.List;
@@ -17,4 +18,7 @@ public interface MedicineBatchRepository {
             throws ExecutionException, InterruptedException;
 
     public void deleteByIdInTransaction(Transaction transaction, String orgId, String branchId, String medicineId, String batchId) ;
+    Optional<MedicineBatch> findById(Transaction transaction, String orgId, String branchId, String medicineId, String batchId)
+            throws ExecutionException, InterruptedException;
+    List<DocumentSnapshot> getAll(Transaction transaction, String orgId, String branchId, String medicineId, List<String> batchIds) throws ExecutionException, InterruptedException;
 }

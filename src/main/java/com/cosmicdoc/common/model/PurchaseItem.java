@@ -14,6 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 public class PurchaseItem {
     private String medicineId;
+    private String medicineName;
     private String batchNo;
     private Timestamp expiryDate;
 
@@ -31,6 +32,7 @@ public class PurchaseItem {
     private double lineItemTaxAmount;
     private double lineItemTotalAmount; // Taxable - Discount + Tax
     private double mrpPerItem;
+    private String createdBatchId;
 
     // Store tax details used for this line item
     private String taxProfileId;

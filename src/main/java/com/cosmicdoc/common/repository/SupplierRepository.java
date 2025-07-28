@@ -14,5 +14,6 @@ public interface SupplierRepository {
     Optional<Supplier> findById(String organizationId, String supplierId);
     boolean existsById(Transaction transaction, String orgId, String supplierId) throws ExecutionException, InterruptedException;
     void updateBalanceInTransaction(Transaction transaction, String orgId, String supplierId, double amountChange);
-
+    Optional<Supplier> findById(Transaction transaction, String organizationId, String supplierId)
+            throws ExecutionException, InterruptedException;
 }

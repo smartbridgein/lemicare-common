@@ -125,4 +125,34 @@ public class MedicineBatchRepositoryImpl implements MedicineBatchRepository {
         // Stage the delete operation on the transaction
         transaction.delete(batchRef);
     }
+
+    /**
+     * Implementation for finding a specific MedicineBatch by its document ID within a transaction.
+     */
+    @Override
+    public Optional<MedicineBatch> findById(Transaction transaction, String orgId, String branchId, String medicineId, String batchId)
+            throws ExecutionException, InterruptedException {
+
+        // 1. Get a direct reference to the batch document using the full path context.
+        DocumentReference docRef = getCollection(orgId, branchId, medicineId).document(batchId);
+
+        // 2. Use the transaction object to perform the read. This ensures the read is
+        //    part of the atomic operation and that Firestore places a lock on the document.
+        DocumentSnapshot snapshot = transaction.get(docRef).get();
+
+        // 3. Check if the document exists and map it to the MedicineBatch object.
+        if (snapshot.exists()) {
+            return Optional.ofNullable(snapshot.toObject(MedicineBatch.class));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public List<DocumentSnapshot> getAll(Transaction transaction, String orgId, String branchId, String medicineId, List<String> batchIds) throws ExecutionException, InterruptedException {
+        List<DocumentReference> docRefs = batchIds.stream()
+                .map(id -> getCollection(orgId, branchId, medicineId).document(id))
+                .collect(Collectors.toList());
+        return transaction.getAll(docRefs.toArray(new DocumentReference[0])).get();
+    }
 }

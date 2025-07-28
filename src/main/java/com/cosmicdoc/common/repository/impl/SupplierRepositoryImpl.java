@@ -141,4 +141,23 @@ public class SupplierRepositoryImpl implements SupplierRepository {
         //    with this value.
         transaction.update(supplierRef, "outstandingBalance", FieldValue.increment(amountChange));
     }
+
+    @Override
+    public Optional<Supplier> findById(Transaction transaction, String organizationId, String supplierId)
+            throws ExecutionException, InterruptedException {
+
+        // 1. Get a direct reference to the document using the full path context.
+        DocumentReference docRef = getCollection(organizationId).document(supplierId);
+
+        // 2. Use the transaction object to perform the read. This ensures the read is
+        //    part of the atomic operation and that Firestore places a lock on the document.
+        DocumentSnapshot snapshot = transaction.get(docRef).get();
+
+        // 3. Check if the document exists and map it to the Supplier object.
+        if (snapshot.exists()) {
+            return Optional.ofNullable(snapshot.toObject(Supplier.class));
+        } else {
+            return Optional.empty();
+        }
+    }
 }

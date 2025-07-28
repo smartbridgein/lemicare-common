@@ -19,5 +19,6 @@ public class MedicineBatch {
     private int quantityAvailable; // Quantity available in this specific batch
     private double purchaseCost;
     private double mrp; // Maximum Retail Price
+    private String sourcePurchaseId;
 
 }
