@@ -15,6 +15,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+
 public class Patient {
     @DocumentId
     private String patientId; // Unique ID for the patient within the system.

@@ -3,7 +3,8 @@ package com.cosmicdoc.common.repository.impl;
 import com.cosmicdoc.common.model.Payment;
 import com.cosmicdoc.common.repository.PaymentRepository;
 import com.cosmicdoc.common.util.JsonDataLoader;
-import org.springframework.stereotype.Repository;
+//import org.springframework.stereotype.Repository;
+//import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,7 +15,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-@Repository
+//@Repository
 public class PaymentRepositoryImpl implements PaymentRepository {
     private final JsonDataLoader jsonDataLoader;
     private final Map<String, Payment> paymentMap = new ConcurrentHashMap<>();

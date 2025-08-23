@@ -36,6 +36,7 @@ public class SalesReturn {
     private PaymentMode refundMode; // How the refund was given (e.g., CASH, To Bank Account)
     private String refundReference; // Optional reference for the refund transaction
     private List<SalesReturnItem> items;
+    private String reason;
 }
 
 

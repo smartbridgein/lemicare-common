@@ -27,4 +27,5 @@ public class SaleItem {
     private double lineItemTaxableAmount; // <-- ADDED
     private double lineItemTotalAmount;
     private double taxRateApplied;
+    private int returnedQuantity = 0;
 }

@@ -38,4 +38,6 @@ public class PurchaseItem {
     private String taxProfileId;
     private double taxRateApplied;
     private List<TaxComponent> taxComponents;
+    private int returnedQuantity = 0;
+
 }
