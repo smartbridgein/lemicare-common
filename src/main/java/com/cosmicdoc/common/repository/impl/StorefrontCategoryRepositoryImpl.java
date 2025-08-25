@@ -1,6 +1,7 @@
 package com.cosmicdoc.common.repository.impl;
 
 import com.cosmicdoc.common.model.StorefrontCategory;
+import com.cosmicdoc.common.model.StorefrontProduct;
 import com.cosmicdoc.common.repository.StorefrontCategoryRepository;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.Firestore;
@@ -65,6 +66,23 @@ public class StorefrontCategoryRepositoryImpl implements StorefrontCategoryRepos
             getCollection(organizationId).document(categoryId).delete().get();
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException("Error deleting storefront category", e);
+        }
+    }
+
+    /**
+     * Implementation for finding a storefront product by its composite key (orgId and productId).
+     */
+    @Override
+    public Optional<StorefrontProduct> findByOrganizationIdAndProductId(String organizationId, String productId) {
+        try {
+            // This is a direct and highly efficient document lookup.
+            var document = getCollection(organizationId).document(productId).get().get();
+            if (document.exists()) {
+                return Optional.ofNullable(document.toObject(StorefrontProduct.class));
+            }
+            return Optional.empty();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error finding storefront product by ID: " + productId, e);
         }
     }
 }
