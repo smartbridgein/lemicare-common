@@ -11,5 +11,6 @@ public interface StorefrontCategoryRepository {
     Optional<StorefrontCategory> findById(String organizationId, String categoryId);
     List<StorefrontCategory> findAllByOrganization(String organizationId);
     void deleteById(String organizationId, String categoryId);
-    Optional<StorefrontProduct> findByOrganizationIdAndProductId(String organizationId, String productId);
+    Optional<StorefrontProduct> findByOrganizationIdAndProduct(String organizationId, String productId);
+
 }

@@ -1,6 +1,5 @@
 package com.cosmicdoc.common.repository.impl;
 
-
 import com.cosmicdoc.common.model.StorefrontProduct;
 import com.cosmicdoc.common.repository.StorefrontProductRepository;
 import com.google.cloud.firestore.CollectionReference;
@@ -15,63 +14,66 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Repository
-
+@RequiredArgsConstructor
 public class StorefrontProductRepositoryImpl implements StorefrontProductRepository {
 
     private final Firestore firestore;
     private static final String COLLECTION_NAME = "storefront_products";
 
-    public StorefrontProductRepositoryImpl(Firestore firestore) {
-        this.firestore = firestore;
-    }
-
-    private CollectionReference getCollection(String organizationId, String branchId) {
-        return firestore.collection("organizations").document(organizationId)
-                .collection("branches").document(branchId)
-                .collection(COLLECTION_NAME);
+    /**
+     * CORRECTED: Helper now gets the sub-collection directly under the organization.
+     */
+    private CollectionReference getCollection(String organizationId) {
+        return firestore.collection("organizations").document(organizationId).collection(COLLECTION_NAME);
     }
 
     @Override
-    public StorefrontProduct save(StorefrontProduct product,String organizationId, String branchId) {
+    public StorefrontProduct save(StorefrontProduct product) {
+        if (product.getOrganizationId() == null || product.getProductId() == null) {
+            throw new IllegalArgumentException("OrganizationId and ProductId are required.");
+        }
         try {
-            getCollection(organizationId, branchId)
-                    .document(product.getProductId()).set(product).get();
+            getCollection(product.getOrganizationId()).document(product.getProductId()).set(product).get();
             return product;
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException("Error saving storefront product", e);
         }
     }
 
+    /**
+     * CORRECTED: Renamed findByOrganizationIdAndProductId to the standard 'findById'
+     * and removed the redundant branchId parameter.
+     */
     @Override
-    public Optional<StorefrontProduct> findById(String organizationId, String branchId, String productId) {
+    public Optional<StorefrontProduct> findById(String organizationId, String productId) {
         try {
-            var doc = getCollection(organizationId, branchId).document(productId).get().get();
+            var doc = getCollection(organizationId).document(productId).get().get();
             return doc.exists() ? Optional.ofNullable(doc.toObject(StorefrontProduct.class)) : Optional.empty();
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("Error finding storefront product by ID", e);
+            throw new RuntimeException("Error finding storefront product by ID: " + productId, e);
         }
     }
 
     @Override
-    public List<StorefrontProduct> findAllVisibleByBranch(String organizationId, String branchId) {
+    public List<StorefrontProduct> findAllByOrganizationId(String organizationId) {
         try {
-            Query query = getCollection(organizationId, branchId)
-                    .whereEqualTo("isVisible", true); // Only fetch products marked as visible
-
-            return query.get().get().getDocuments().stream()
+            var documents = getCollection(organizationId).get().get().getDocuments();
+            return documents.stream()
                     .map(doc -> doc.toObject(StorefrontProduct.class))
                     .collect(Collectors.toList());
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("Error fetching visible products for branch", e);
+            throw new RuntimeException("Error fetching all storefront products for organization: " + organizationId, e);
         }
     }
 
+    /**
+     * CORRECTED: Renamed from findAllVisibleByCategory.
+     * This query is now simpler as it doesn't need to be a collection group query.
+     */
     @Override
-    public List<StorefrontProduct> findAllVisibleByCategory(String organizationId, String categoryId) {
-        // This is a Collection Group query. It finds products in a category across ALL branches.
+    public List<StorefrontProduct> findAllVisibleByCategoryId(String organizationId, String categoryId) {
         try {
-            Query query = firestore.collectionGroup(COLLECTION_NAME)
-                    .whereEqualTo("organizationId", organizationId)
+            Query query = getCollection(organizationId)
                     .whereEqualTo("categoryId", categoryId)
                     .whereEqualTo("isVisible", true);
 

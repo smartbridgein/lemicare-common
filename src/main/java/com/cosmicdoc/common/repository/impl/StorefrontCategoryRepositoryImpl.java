@@ -69,11 +69,10 @@ public class StorefrontCategoryRepositoryImpl implements StorefrontCategoryRepos
         }
     }
 
-    /**
-     * Implementation for finding a storefront product by its composite key (orgId and productId).
-     */
+
+
     @Override
-    public Optional<StorefrontProduct> findByOrganizationIdAndProductId(String organizationId, String productId) {
+    public Optional<StorefrontProduct> findByOrganizationIdAndProduct(String organizationId, String productId) {
         try {
             // This is a direct and highly efficient document lookup.
             var document = getCollection(organizationId).document(productId).get().get();
