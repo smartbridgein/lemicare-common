@@ -2,9 +2,10 @@ package com.cosmicdoc.common.repository.impl;
 
 import com.cosmicdoc.common.model.StorefrontProduct;
 import com.cosmicdoc.common.repository.StorefrontProductRepository;
-import com.google.cloud.firestore.CollectionReference;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.Query;
+import com.cosmicdoc.common.util.FirestorePage;
+import com.google.api.gax.paging.Page;
+import com.google.cloud.firestore.*;
+import com.google.firebase.database.annotations.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -82,6 +83,68 @@ public class StorefrontProductRepositoryImpl implements StorefrontProductReposit
                     .collect(Collectors.toList());
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException("Error fetching visible products by category", e);
+        }
+    }
+
+    @Override
+    public Page<StorefrontProduct> findAllVisible(String organizationId, String categoryId, int pageSize, @Nullable String startAfter) {
+        try {
+            Query baseQuery = getCollection(organizationId)
+                    .whereEqualTo("categoryId", categoryId)
+                    .whereEqualTo("isVisible", true)
+                    .orderBy("productId"); // Consistent orderBy for pagination
+
+            // --- Start: Calculate totalElements and totalPages ---
+            // This will incur an additional read operation.
+            // Consider caching this if the total count doesn't change frequently.
+            long totalElements = 0;
+            try {
+                // Execute the query without limits or startAfter to get total count
+                totalElements = baseQuery.count().get().get().getCount();
+            } catch (Exception e) {
+                // Log and handle error if count fails, default to 0
+                System.err.println("Error getting total count for products: " + e.getMessage());
+            }
+
+            int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+            // --- End: Calculate totalElements and totalPages ---
+
+
+            Query paginatedQuery = baseQuery;
+
+            if (startAfter != null && !startAfter.isEmpty()) {
+                DocumentSnapshot startAfterDoc = getCollection(organizationId)
+                        .document(startAfter)
+                        .get()
+                        .get();
+
+                if (startAfterDoc.exists()) {
+                    paginatedQuery = baseQuery.startAfter(startAfterDoc);
+                } else {
+                    System.err.println("Warning: startAfter document with ID " + startAfter + " not found. Starting from beginning.");
+                }
+            }
+
+            // Fetch one more than pageSize to determine if there's a next page
+            List<QueryDocumentSnapshot> documents = paginatedQuery.limit(pageSize + 1).get().get().getDocuments();
+
+            List<StorefrontProduct> products = documents.stream()
+                    .limit(pageSize) // Take only up to pageSize products
+                    .map(doc -> doc.toObject(StorefrontProduct.class))
+                    .collect(Collectors.toList());
+
+            String nextPageToken = null;
+            boolean isLast = true; // Assume true until proven otherwise
+            if (documents.size() > pageSize) {
+                nextPageToken = products.get(products.size() - 1).getProductId();
+                isLast = false; // If we got more than pageSize, it's not the last page
+            }
+
+            // Now use the new FirestorePage constructor
+            return new FirestorePage<>(products, nextPageToken, pageSize, totalElements, totalPages, isLast);
+
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error fetching paginated visible products by category", e);
         }
     }
 }

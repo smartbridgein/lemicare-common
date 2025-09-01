@@ -1,6 +1,9 @@
 package com.cosmicdoc.common.repository;
 
 import com.cosmicdoc.common.model.StorefrontProduct;
+import com.google.api.gax.paging.Page;
+import com.google.firebase.database.annotations.Nullable;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -30,4 +33,6 @@ public interface StorefrontProductRepository {
      * Finds all storefront products in a specific category for a given organization.
      */
     List<StorefrontProduct> findAllVisibleByCategoryId(String organizationId, String categoryId);
+
+    Page<StorefrontProduct> findAllVisible(String organizationId, String categoryId, int pageSize, @Nullable String startAfter);
 }

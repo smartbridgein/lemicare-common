@@ -14,9 +14,9 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
-@Repository
 
 @Slf4j
+@Repository
 public class DeliveryOrderRepositoryImpl implements DeliveryOrderRepository {
 
     private final Firestore firestore;
@@ -66,23 +66,22 @@ public class DeliveryOrderRepositoryImpl implements DeliveryOrderRepository {
         }
     }
 
+    // This method is required by your WebhookService
     @Override
     public Optional<DeliveryOrder> findByPartnerTrackingId(String partnerTrackingId) {
-        // This query must scan across all organizations and branches.
-        // It requires a Collection Group query and a corresponding index in Firestore.
+        // This must be a Collection Group query because the webhook doesn't know the orgId.
         try {
             Query query = firestore.collectionGroup(COLLECTION_NAME)
                     .whereEqualTo("partnerTrackingId", partnerTrackingId)
                     .limit(1);
 
-            QuerySnapshot querySnapshot = query.get().get();
-            if (querySnapshot.isEmpty()) {
+            var documents = query.get().get().getDocuments();
+            if (documents.isEmpty()) {
                 return Optional.empty();
             }
-            return Optional.ofNullable(querySnapshot.getDocuments().get(0).toObject(DeliveryOrder.class));
-        } catch (Exception e) {
-            log.error("Error finding by partnerTrackingId '{}'", partnerTrackingId, e);
-            throw new RuntimeException("Error during Firestore collection group query", e);
+            return Optional.ofNullable(documents.get(0).toObject(DeliveryOrder.class));
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error finding delivery order by partner tracking ID: " + partnerTrackingId, e);
         }
     }
 
