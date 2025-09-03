@@ -6,6 +6,8 @@ import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.*;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collections;
@@ -23,6 +25,8 @@ import java.util.stream.Collectors;
 @Repository
 
 public class MedicineRepositoryImpl implements MedicineRepository {
+
+    private static final Logger log = LoggerFactory.getLogger(MedicineRepository.class);
 
     private Firestore firestore;
 
@@ -262,6 +266,53 @@ public class MedicineRepositoryImpl implements MedicineRepository {
 
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException("Error performing hard delete on medicine with ID: " + medicineId, e);
+        }
+    }
+
+    public int updateStockInTransactions(Transaction transaction, String organizationId, String branchId, String medicineId, int quantityChange) {
+        DocumentReference docRef = getCollection(organizationId, branchId).document(medicineId);
+
+        try {
+            // 1. Read the current medicine document within the transaction
+            DocumentSnapshot snapshot = transaction.get(docRef).get();
+
+            if (!snapshot.exists()) {
+                log.warn("Medicine {} not found for stock update in transaction (org: {}, branch: {}). Transaction will roll back.", medicineId, organizationId, branchId);
+                throw new RuntimeException("Medicine with ID " + medicineId + " not found for stock update.");
+            }
+
+            Medicine medicine = snapshot.toObject(Medicine.class);
+            if (medicine == null) {
+                log.error("Failed to convert medicine snapshot to object for ID {} (org: {}, branch: {}). Transaction will roll back.", medicineId, organizationId, branchId);
+                throw new RuntimeException("Failed to convert medicine document to object for ID " + medicineId);
+            }
+
+            // 2. Calculate the new stock level
+            int currentStock = medicine.getQuantityInStock();
+            int newStock = currentStock + quantityChange;
+
+            // Optional: Business rule to prevent negative stock
+            if (newStock < 0) {
+                log.warn("Attempted to set negative stock for medicine {} (org: {}, branch: {}). Current: {}, Change: {}. Transaction will roll back.", medicineId, organizationId, branchId, currentStock, quantityChange);
+                throw new RuntimeException("Insufficient stock for medicine ID " + medicineId + ". Cannot reduce stock below zero.");
+            }
+
+            // 3. Update the document with the calculated new stock level
+            medicine.setQuantityInStock(newStock); // Update the DTO
+
+            // Set the entire updated object back to Firestore
+            transaction.set(docRef, medicine);
+
+            // Return the newly calculated stock level
+            return newStock;
+
+        } catch (ExecutionException | InterruptedException e) {
+            log.error("Firestore transaction operation failed for medicine {} (org: {}, branch: {}): {}", medicineId, organizationId, branchId, e.getMessage(), e);
+            Thread.currentThread().interrupt(); // Restore interrupt status
+            throw new RuntimeException("Firestore transaction operation failed for medicine " + medicineId, e);
+        } catch (RuntimeException e) {
+            // Catch our custom RuntimeExceptions for specific validation failures
+            throw e;
         }
     }
 }

@@ -2,6 +2,7 @@ package com.cosmicdoc.common.model;
 
 import com.cosmicdoc.common.util.IdGenerator; // Assuming you have this
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -21,6 +22,7 @@ import java.time.Instant;
 @Data
 @NoArgsConstructor // Required for JSON deserialization by consumers
 @AllArgsConstructor
+@Builder
 public class StockLevelChangedEvent {
 /**
  * A unique identifier for this specific event instance (e.g., a ULID).
@@ -59,6 +61,10 @@ private int changeInStock;
 */
 private int newTotalStock;
 
+private String medicineName;
+
+private double mrp;
+
  /**
  * A static factory method for easily creating a new event.
   * @param organizationId The organization ID.
@@ -67,7 +73,7 @@ private int newTotalStock;
  * @param newTotalStock The final total stock.
  * @return A new StockLevelChangedEvent instance.
  */
-public static StockLevelChangedEvent of(String organizationId, String branchId, String medicineId, int changeInStock, int newTotalStock) {
+public static StockLevelChangedEvent of(String organizationId, String branchId, String medicineId, int changeInStock, int newTotalStock,String medicineName, double mrp) {
 return new StockLevelChangedEvent(
                 IdGenerator.newId("evt"), // Generate a unique event ID
                 Instant.now(), // Set the current timestamp
@@ -75,7 +81,9 @@ return new StockLevelChangedEvent(
                 branchId,
                  medicineId,
                 changeInStock,
-                newTotalStock
+                newTotalStock,
+                medicineName,
+                mrp
                 );
      }
 }

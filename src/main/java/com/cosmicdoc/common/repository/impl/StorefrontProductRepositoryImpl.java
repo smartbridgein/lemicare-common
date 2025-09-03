@@ -15,12 +15,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Repository
-@RequiredArgsConstructor
+
 public class StorefrontProductRepositoryImpl implements StorefrontProductRepository {
 
     private final Firestore firestore;
     private static final String COLLECTION_NAME = "storefront_products";
 
+    public StorefrontProductRepositoryImpl (Firestore firestore) {
+        this.firestore = firestore;
+    }
     /**
      * CORRECTED: Helper now gets the sub-collection directly under the organization.
      */

@@ -34,4 +34,9 @@ public class StorefrontProduct {
     private String categoryId; // Foreign key to the storefront_categories collection
     private String slug;       // URL-friendly version of the product name (e.g., "paracetamol-500mg")
     private List<String> tags; // Search keywords (e.g., ["fever", "painkiller", "headache"])
+    private Double mrp;
+    private int stockLevel;
+    private String currentStatus;
+    private String productName;
+
 }

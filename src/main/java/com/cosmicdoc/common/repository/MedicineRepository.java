@@ -29,4 +29,5 @@ public interface MedicineRepository  {
      * @param medicineId The ID of the medicine to delete.
      */
     void deleteByIdHard(String organizationId, String branchId, String medicineId);
+    public int updateStockInTransactions(Transaction transaction, String organizationId, String branchId, String medicineId, int quantityChange);
 }
