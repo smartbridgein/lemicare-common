@@ -92,29 +92,28 @@ public class StorefrontProductRepositoryImpl implements StorefrontProductReposit
     @Override
     public Page<StorefrontProduct> findAllVisible(String organizationId, String categoryId, int pageSize, @Nullable String startAfter) {
         try {
+            // --- Base query: fetch only visible products ---
             Query baseQuery = getCollection(organizationId)
-                    .whereEqualTo("categoryId", categoryId)
                     .whereEqualTo("isVisible", true)
-                    .orderBy("productId"); // Consistent orderBy for pagination
+                    .orderBy("productId");
 
-            // --- Start: Calculate totalElements and totalPages ---
-            // This will incur an additional read operation.
-            // Consider caching this if the total count doesn't change frequently.
+            // --- Apply category filter only if categoryId is provided ---
+            if (categoryId != null && !categoryId.isEmpty()) {
+                baseQuery = baseQuery.whereEqualTo("categoryId", categoryId);
+            }
+
+            // --- Get total count for pagination ---
             long totalElements = 0;
             try {
-                // Execute the query without limits or startAfter to get total count
                 totalElements = baseQuery.count().get().get().getCount();
             } catch (Exception e) {
-                // Log and handle error if count fails, default to 0
                 System.err.println("Error getting total count for products: " + e.getMessage());
             }
 
             int totalPages = (int) Math.ceil((double) totalElements / pageSize);
-            // --- End: Calculate totalElements and totalPages ---
 
-
+            // --- Apply pagination cursor if provided ---
             Query paginatedQuery = baseQuery;
-
             if (startAfter != null && !startAfter.isEmpty()) {
                 DocumentSnapshot startAfterDoc = getCollection(organizationId)
                         .document(startAfter)
@@ -128,26 +127,27 @@ public class StorefrontProductRepositoryImpl implements StorefrontProductReposit
                 }
             }
 
-            // Fetch one more than pageSize to determine if there's a next page
+            // --- Fetch documents (limit + 1 to detect if next page exists) ---
             List<QueryDocumentSnapshot> documents = paginatedQuery.limit(pageSize + 1).get().get().getDocuments();
 
             List<StorefrontProduct> products = documents.stream()
-                    .limit(pageSize) // Take only up to pageSize products
+                    .limit(pageSize)
                     .map(doc -> doc.toObject(StorefrontProduct.class))
                     .collect(Collectors.toList());
 
+            // --- Handle pagination token & last-page flag ---
             String nextPageToken = null;
-            boolean isLast = true; // Assume true until proven otherwise
+            boolean isLast = true;
             if (documents.size() > pageSize) {
                 nextPageToken = products.get(products.size() - 1).getProductId();
-                isLast = false; // If we got more than pageSize, it's not the last page
+                isLast = false;
             }
 
-            // Now use the new FirestorePage constructor
+            // --- Return FirestorePage response ---
             return new FirestorePage<>(products, nextPageToken, pageSize, totalElements, totalPages, isLast);
 
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("Error fetching paginated visible products by category", e);
+            throw new RuntimeException("Error fetching paginated visible products", e);
         }
     }
 }

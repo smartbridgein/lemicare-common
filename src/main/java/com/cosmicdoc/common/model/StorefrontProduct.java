@@ -14,12 +14,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class StorefrontProduct {
-    @DocumentId
+
     private String productId; // Mirrors the medicineId from inventory
 
     private String organizationId; // For security rules and collection group queries
 
-    private String branchId; // To link with a specific branch/store
+    //private String branchId; // To link with a specific branch/store
 
     // --- Core CMS Fields ---
     private String richDescription; // Can store HTML or Markdown
