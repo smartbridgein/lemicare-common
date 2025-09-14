@@ -8,6 +8,8 @@ import com.google.cloud.firestore.Transaction;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.concurrent.ExecutionException;
+
 @Repository
 
 public class StorefrontOrderRepositoryImpl implements StorefrontOrderRepository {
@@ -19,16 +21,33 @@ public class StorefrontOrderRepositoryImpl implements StorefrontOrderRepository 
         this.firestore = firestore;
     }
 
-    private CollectionReference getCollection(String organizationId, String branchId) {
-        return firestore.collection("organizations").document(organizationId)
-                .collection("branches").document(branchId)
-                .collection(COLLECTION_NAME);
-    }
 
     @Override
     public void saveInTransaction(Transaction transaction, StorefrontOrder order) {
-        var docRef = getCollection(order.getOrganizationId(), order.getBranchId())
+        var docRef = getCollection(order.getOrganizationId())
                 .document(order.getOrderId());
         transaction.set(docRef, order);
+    }
+
+    public StorefrontOrder save(StorefrontOrder order) {
+        if (order.getOrganizationId() == null || order.getOrderId() == null) {
+            throw new IllegalArgumentException("StorefrontOrder must have organizationId and orderId for saving.");
+        }
+        try {
+            // Using set() with the provided orderId as the document ID
+            this.getCollection(order.getOrganizationId())
+                    .document(order.getOrderId())
+                    .set(order)
+                    .get();
+            return order;
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException("Error saving storefront order with ID: " + order.getOrderId(), e);
+        }
+    }
+
+    private CollectionReference getCollection(String organizationId) {
+        return firestore.collection("organizations")
+                .document(organizationId)
+                .collection(COLLECTION_NAME);
     }
 }

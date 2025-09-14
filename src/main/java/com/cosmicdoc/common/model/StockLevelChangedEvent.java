@@ -65,6 +65,13 @@ private String medicineName;
 
 private double mrp;
 
+private String taxprofileId;
+
+private String gstType;
+
+private String category;
+
+
  /**
  * A static factory method for easily creating a new event.
   * @param organizationId The organization ID.
@@ -73,7 +80,7 @@ private double mrp;
  * @param newTotalStock The final total stock.
  * @return A new StockLevelChangedEvent instance.
  */
-public static StockLevelChangedEvent of(String organizationId, String branchId, String medicineId, int changeInStock, int newTotalStock,String medicineName, double mrp) {
+public static StockLevelChangedEvent of(String organizationId, String branchId, String medicineId, int changeInStock, int newTotalStock,String medicineName, double mrp,String taxprofileId,String gstType,String category) {
 return new StockLevelChangedEvent(
                 IdGenerator.newId("evt"), // Generate a unique event ID
                 Instant.now(), // Set the current timestamp
@@ -83,7 +90,11 @@ return new StockLevelChangedEvent(
                 changeInStock,
                 newTotalStock,
                 medicineName,
-                mrp
+                mrp,
+                taxprofileId,
+                gstType,
+                category
+
                 );
      }
 }
