@@ -5,18 +5,24 @@ import com.cosmicdoc.common.model.UserStatus;
 import com.cosmicdoc.common.repository.UsersRepository;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.WriteBatch;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 @Repository
-public class UsersRepositoryImpl extends BaseRepositoryImpl<Users,String> implements UsersRepository {
-
+public class UsersRepositoryImpl extends AbstractTransactionalRepositoryImpl<Users,String> implements UsersRepository {
+    private static final Logger logger = LoggerFactory.getLogger(UserRepositoryImpl.class);
    public UsersRepositoryImpl (Firestore firestore) {
-        super();
+        super(firestore);
         this.firestore = firestore;
     }
 
@@ -138,6 +144,63 @@ public class UsersRepositoryImpl extends BaseRepositoryImpl<Users,String> implem
         }
     }
 
+    /*@Override
+    public Optional<Users> findByEmail(String email) {
+        try {
+            logger.debug("Attempting to find user by email: {}", email);
+
+            // Construct the query to find documents where the 'email' field matches
+            var query = getCollection().whereEqualTo("email", email);
+
+            // Execute the query and wait for results
+            var querySnapshot = query.get().get();
+
+            // Check if any documents were returned
+            if (querySnapshot.isEmpty()) {
+                logger.debug("No user found with email: {}", email);
+                return Optional.empty();
+            }
+
+            // In a well-designed system, email should be unique, so we expect at most one document.
+            // We retrieve the first matching document.
+            QueryDocumentSnapshot document = querySnapshot.getDocuments().get(0);
+            logger.debug("Found user document with ID: {}", document.getId());
+
+            // --- The core: Use toObject() for automatic mapping ---
+            Users user = document.toObject(Users.class);
+
+            // --- Post-processing (optional, for defensive programming against inconsistent data) ---
+            // These checks ensure that if a field is somehow missing or null in Firestore
+            // (despite your Java model expecting it), the Java object has sensible defaults.
+            // Firestore's toObject() will set primitive fields (like boolean) to their default
+            // values (false) and object fields (like String, List, Enum) to null if the field
+            // is missing in the document.
+
+            if (user.getStatus() == null) {
+                logger.warn("User {} has no status set in Firestore, defaulting to PENDING_VERIFICATION.", user.getUserId());
+                user.setStatus(UserStatus.PENDING_VERIFICATION);
+            }
+            if (user.getOrganizations() == null) {
+                logger.warn("User {} has no organizations list in Firestore, defaulting to empty list.", user.getUserId());
+                user.setOrganizations(Collections.emptyList()); // Always prefer emptyList() over null list
+            }
+            // Add similar defensive checks for other fields (e.g., displayName, mobileNumber)
+            // if they are critical and might be missing in some Firestore documents.
+
+            logger.info("Successfully retrieved and mapped user with ID: {}", user.getUserId());
+            return Optional.of(user);
+
+        } catch (InterruptedException | ExecutionException e) {
+            // Handle Firestore specific exceptions
+            logger.error("Firestore operation failed while finding user by email: {}", email, e);
+            throw new RuntimeException("Failed to retrieve user by email from Firestore.", e);
+        } catch (Exception e) {
+            // Catch any other unexpected exceptions (e.g., during toObject() mapping if data is truly bad)
+            logger.error("An unexpected error occurred while processing user data for email: {}", email, e);
+            throw new RuntimeException("An error occurred during user data processing.", e);
+        }
+    }*/
+
     @Override
     public Optional<Users> findByPhone(String mobileNumber) {
         try {
@@ -179,11 +242,7 @@ public class UsersRepositoryImpl extends BaseRepositoryImpl<Users,String> implem
         }
     }
 
-    @Override
-    public void saveInTransaction(WriteBatch batch, Users user) {
-        var docRef = getCollection().document(user.getUserId());
-        batch.set(docRef, user);
-    }
+
 
     @Override
     public void updateLastLogin(String userId) {

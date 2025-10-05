@@ -12,7 +12,7 @@ import java.util.ArrayList;
 public class PatientRecordRepositoryImpl extends BaseRepositoryImpl<PatientRecord, String> implements PatientRecordRepository {
     
     public PatientRecordRepositoryImpl(Firestore firestore) {
-        super();
+        super(firestore);
         this.firestore = firestore;
     }
 

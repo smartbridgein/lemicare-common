@@ -1,27 +1,29 @@
 package com.cosmicdoc.common.repository.impl;
 
+import com.cosmicdoc.common.model.PersistableEntity;
 import com.cosmicdoc.common.repository.BaseRepository;
-import com.google.cloud.firestore.CollectionReference;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.google.cloud.firestore.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
-public abstract class BaseRepositoryImpl<T, ID> implements BaseRepository<T, ID> {
+public abstract class  BaseRepositoryImpl<T extends PersistableEntity, ID> implements BaseRepository<T, ID> {
 
-    @Autowired
-    protected Firestore firestore;
+    private static final Logger logger = LoggerFactory.getLogger(BaseRepositoryImpl.class);
+
+    protected Firestore firestore ;
 
     protected Class<T> entityClass;
 
     @SuppressWarnings("unchecked")
-    public BaseRepositoryImpl() {
+    public BaseRepositoryImpl(Firestore firestore) {
+        this.firestore = this.firestore;
         this.entityClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
     }
 
@@ -57,20 +59,17 @@ public abstract class BaseRepositoryImpl<T, ID> implements BaseRepository<T, ID>
     @Override
     public T save(T entity) {
         try {
-            String docId;
-            try {
-                docId = entityClass.getMethod("getId").invoke(entity).toString();
-                getCollection().document(docId).set(entity).get();
-                @SuppressWarnings("unchecked")
-                ID id = (ID) docId;
-                return findById(id).orElseThrow(() -> new RuntimeException("Error saving entity"));
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                var docRef = getCollection().add(entity).get();
-                @SuppressWarnings("unchecked")
-                ID id = (ID) docRef.getId();
-                return findById(id).orElseThrow(() -> new RuntimeException("Error saving entity"));
+            String docId = entity.getId(); // Direct call to getId() from PersistableEntity
+            if (docId == null || docId.isEmpty()) {
+                String newId = UUID.randomUUID().toString();
+                entity.setId((String) newId); // Set ID using setId() from PersistableEntity
+                docId = newId;
             }
+            getCollection().document(docId).set(entity).get();
+            // Instead of findById, you can just return the updated entity if you trust the write
+            return entity; // More efficient than a re-fetch
         } catch (InterruptedException | ExecutionException e) {
+            logger.error("Error saving document", e);
             throw new RuntimeException("Error saving document", e);
         }
     }

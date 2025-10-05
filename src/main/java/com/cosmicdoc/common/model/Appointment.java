@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-public class Appointment {
+public class Appointment implements PersistableEntity {
     @JsonProperty("appointmentId")
     private String appointmentId;
     @JsonProperty("userId")
@@ -39,6 +39,16 @@ public class Appointment {
 
     @JsonProperty("date")
     private Timestamp date;
+
+    @Override
+    public String getId() {
+        return appointmentId;
+    }
+
+    @Override
+    public void setId(String appointmentId) {
+      this.appointmentId = appointmentId;
+    }
 
     public static class GpsLocation {
         @JsonProperty("latitude")

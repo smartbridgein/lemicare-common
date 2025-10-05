@@ -8,9 +8,9 @@ import com.google.cloud.firestore.WriteBatch;
 import java.util.List;
 import java.util.Optional;
 
-public interface UsersRepository extends BaseRepository<Users, String> {
+public interface UsersRepository extends TransactionalRepository<Users, String> {
     Optional<Users> findByEmail(String email);
     Optional<Users> findByPhone(String phone);
-    void saveInTransaction(WriteBatch batch, Users user);
+    //void saveInTransaction(WriteBatch batch, Users user);
     void updateLastLogin(String userId);
 }

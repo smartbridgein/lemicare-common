@@ -11,7 +11,7 @@ import java.util.Optional;
 public class DoctorRepositoryImpl extends BaseRepositoryImpl<Doctor, String> implements DoctorRepository {
     
     public DoctorRepositoryImpl(Firestore firestore) {
-        super();
+        super(firestore);
         this.firestore = firestore;
     }
 

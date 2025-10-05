@@ -3,7 +3,7 @@ package com.cosmicdoc.common.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
 
-public class User {
+public class User implements PersistableEntity {
     @JsonProperty("userId")
     private String id;
     private String email;

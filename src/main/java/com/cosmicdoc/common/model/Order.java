@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public class Order {
+public class Order implements PersistableEntity {
     @JsonProperty("orderId")
     private String id;
     

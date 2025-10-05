@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 public class BranchRepositoryImpl extends BaseRepositoryImpl<Branch,String> implements BranchRepository {
 
     public BranchRepositoryImpl(Firestore firestore) {
-        super();
+        super(firestore);
         this.firestore = firestore;
     }
 

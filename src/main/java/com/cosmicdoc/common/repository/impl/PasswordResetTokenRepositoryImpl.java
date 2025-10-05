@@ -13,7 +13,7 @@ import java.util.Optional;
 public class PasswordResetTokenRepositoryImpl extends BaseRepositoryImpl<PasswordResetToken, String> implements PasswordResetTokenRepository {
 
     public PasswordResetTokenRepositoryImpl(Firestore firestore) {
-        super();
+        super(firestore);
         this.firestore = firestore;
     }
 

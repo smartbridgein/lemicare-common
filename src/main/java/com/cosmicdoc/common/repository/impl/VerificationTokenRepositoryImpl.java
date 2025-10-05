@@ -13,7 +13,7 @@ import java.util.Optional;
 public class VerificationTokenRepositoryImpl extends BaseRepositoryImpl<VerificationToken, String> implements VerificationTokenRepository {
 
     public VerificationTokenRepositoryImpl(Firestore firestore) {
-        super();
+        super(firestore);
         this.firestore = firestore;
     }
 
@@ -36,7 +36,7 @@ public class VerificationTokenRepositoryImpl extends BaseRepositoryImpl<Verifica
 
     @Override
     public void saveInTransaction(WriteBatch batch, VerificationToken verificationToken) {
-        var docRef = getCollection().document(verificationToken.getUserId());
+        var docRef = getCollection().document(verificationToken.getToken());
         batch.set(docRef, verificationToken);
     }
 }

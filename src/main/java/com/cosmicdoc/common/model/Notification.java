@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 
-public class Notification {
+public class Notification implements PersistableEntity {
     @JsonProperty("notificationId")
     private String id;
     private String userId;

@@ -11,10 +11,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PasswordResetToken {
+public class PasswordResetToken implements PersistableEntity {
     @DocumentId
     private String token;
-    private String userId;
+    private String identityId;
     private String email;
     private Timestamp expiresAt;
+    private Timestamp createdAt;
+
+    @Override
+    public String getId() {
+        return token;
+    }
+
+    @Override
+    public void setId(String token) {
+    this.token =token;
+    }
 }

@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class Doctor {
+public class Doctor implements PersistableEntity {
     public static class Schedule {
         private List<String> days;
         private List<String> timeSlots;

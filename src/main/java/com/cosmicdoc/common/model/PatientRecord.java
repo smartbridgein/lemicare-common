@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-public class PatientRecord {
+public class PatientRecord implements PersistableEntity {
     private String id;
     private String patientId;
     private String doctorId;

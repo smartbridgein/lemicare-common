@@ -17,4 +17,5 @@ public class ImageAsset {
     private String largeUrl;       // URL to a large (e.g., 1200x1200) version
     private String altText;        // Crucial for accessibility (ADA) and SEO
     private int displayOrder;    // 0, 1, 2, 3... to control the gallery order
+    private String fileExtension;
 }

@@ -1,23 +1,23 @@
 package com.cosmicdoc.common.repository.impl;
 
 import com.cosmicdoc.common.model.OrganizationMember;
+import com.cosmicdoc.common.model.OrganizationMemberStatus;
 import com.cosmicdoc.common.repository.OrganizationMemberRepository;
-import com.google.cloud.firestore.CollectionReference;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.QueryDocumentSnapshot;
-import com.google.cloud.firestore.WriteBatch;
+import com.cosmicdoc.common.repository.TransactionalRepository;
+import com.google.cloud.firestore.*;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Repository
-public class OrganizationMemberRepositoryImpl extends BaseRepositoryImpl<OrganizationMember,String> implements OrganizationMemberRepository  {
+public class OrganizationMemberRepositoryImpl extends AbstractTransactionalRepositoryImpl<OrganizationMember,String> implements OrganizationMemberRepository  {
 
     public OrganizationMemberRepositoryImpl(Firestore firestore) {
-        super();
+        super(firestore);
         this.firestore = firestore;
     }
     @Override
@@ -97,5 +97,80 @@ public class OrganizationMemberRepositoryImpl extends BaseRepositoryImpl<Organiz
             throw new RuntimeException("Error finding all members for organization: " + organizationId, e);
         }
     }
+    @Override
+    public Optional<OrganizationMember> findByCustomerIdAndOrgId(String customerId, String organizationId) {
+        try {
+            List<QueryDocumentSnapshot> documents = getCollection()
+                    .whereEqualTo("customerId", customerId)
+                    .whereEqualTo("organizationId", organizationId)
+                    .get().get().getDocuments();
+            if (!documents.isEmpty()) {
+                return Optional.ofNullable(documents.get(0).toObject(OrganizationMember.class));
+            }
+            return Optional.empty();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error finding organization member by customer ID and organization ID", e);
+        }
+    }
+    @Override
+    public List<OrganizationMember> findAllByCustomerId(String customerId) {
+        try {
+            return getCollection()
+                    .whereEqualTo("customerId", customerId)
+                    .get().get().getDocuments().stream()
+                    .map(doc -> doc.toObject(OrganizationMember.class))
+                    .collect(Collectors.toList());
+        } catch (InterruptedException | ExecutionException e) {
+            // Log the exception
+            return Collections.emptyList();
+        }
+    }
 
-}
+    @Override
+    public List<OrganizationMember> findAllByUserId(String userId) {
+        try {
+            return getCollection()
+                    .whereEqualTo("userId", userId)
+                    .get().get().getDocuments().stream()
+                    .map(doc -> doc.toObject(OrganizationMember.class))
+                    .collect(Collectors.toList());
+        } catch (InterruptedException | ExecutionException e) {
+            // Log the exception
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public Optional<OrganizationMember> findByUserIdAndOrganizationId(String userId, String organizationId) {
+        Query query = getCollection()
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("organizationId", organizationId)
+                .limit(1); // Should only be one such membership
+        try {
+            return Optional.ofNullable(query.get().get().toObjects(OrganizationMember.class).stream().findFirst().orElse(null));
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error finding organization membership by user ID and organization ID", e);
+        }
+    }
+        @Override
+        public List<OrganizationMember> findByUserIdAndStatus(String userId, OrganizationMemberStatus status) {
+            try {
+                List<QueryDocumentSnapshot> documents = getCollection()
+                        .whereEqualTo("userId", userId) // Filter by userId
+                        .whereEqualTo("status", status.name()) // Filter by status (assuming enum is stored as string name)
+                        .get()
+                        .get()
+                        .getDocuments();
+
+                return documents.stream()
+                        .map(doc -> doc.toObject(OrganizationMember.class))
+                        .collect(Collectors.toList());
+
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException("Error finding memberships for user " + userId + " with status " + status.name(), e);
+            }
+        }
+    }
+
+
+

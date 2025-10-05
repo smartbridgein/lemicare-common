@@ -1,7 +1,6 @@
 package com.cosmicdoc.common.repository.impl;
 
 import com.cosmicdoc.common.model.Organization;
-import com.cosmicdoc.common.model.Users;
 import com.cosmicdoc.common.repository.OrganizationRepository;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.Firestore;
@@ -14,7 +13,7 @@ import java.util.Optional;
 public class OrganizationRepositoryImpl extends BaseRepositoryImpl <Organization,String> implements OrganizationRepository {
 
     public OrganizationRepositoryImpl(Firestore firestore) {
-       super();
+       super(firestore);
        this.firestore = firestore;
     }
 

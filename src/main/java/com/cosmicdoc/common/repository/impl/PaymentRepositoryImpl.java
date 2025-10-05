@@ -3,6 +3,7 @@ package com.cosmicdoc.common.repository.impl;
 import com.cosmicdoc.common.model.Payment;
 import com.cosmicdoc.common.repository.PaymentRepository;
 import com.cosmicdoc.common.util.JsonDataLoader;
+import com.google.cloud.firestore.WriteBatch;
 //import org.springframework.stereotype.Repository;
 //import org.springframework.stereotype.Repository;
 

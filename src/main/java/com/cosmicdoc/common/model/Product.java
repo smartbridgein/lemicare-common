@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 
-public class Product {
+public class Product implements PersistableEntity{
     @JsonProperty("productId")
     private String productId;
     private String name;
@@ -28,6 +28,16 @@ public class Product {
     @JsonProperty("image_url")
     private String imageUrl;
     private BigDecimal amount;
+
+    @Override
+    public String getId() {
+        return productId;
+    }
+
+    @Override
+    public void setId(String productId) {
+       this.productId = productId;
+    }
 
     // Nested Review class
     public static class Review {
