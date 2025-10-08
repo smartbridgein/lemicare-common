@@ -5,12 +5,14 @@ import com.cosmicdoc.common.model.Customers;
 import com.cosmicdoc.common.repository.CustomerRepository;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.Firestore;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
 import java.util.Optional;
 
 @Repository
+@Slf4j
 public class CustomerRepositoryImpl extends AbstractTransactionalRepositoryImpl<Customers, String> implements CustomerRepository {
 
     public CustomerRepositoryImpl(Firestore firestore) {
@@ -62,7 +64,7 @@ public class CustomerRepositoryImpl extends AbstractTransactionalRepositoryImpl<
     }
 
     @Override
-    public Optional<Customers> findByPhone(String mobileNumber) {
+    public Optional<Customers> findByMobileNumber(String mobileNumber) {
         try {
             var query = getCollection().whereEqualTo("mobileNumber", mobileNumber);
 
@@ -92,5 +94,48 @@ public class CustomerRepositoryImpl extends AbstractTransactionalRepositoryImpl<
         } catch (Exception e) {
             throw new RuntimeException("Error while updating last login for customer", e);
         }
+    }
+
+    /**
+     * Finds a customer by either their email or mobile number.
+     * Prioritizes email if both are provided and a customer is found by email.
+     * @param email The email address to search for (can be null or blank).
+     * @param mobileNumber The mobile number to search for (can be null or blank).
+     * @return An Optional containing the found Customer, or empty if not found.
+     * @throws RuntimeException if an underlying Firestore operation fails during a lookup.
+     */
+    @Override
+    public Optional<Customers> findByEmailOrMobileNumber(String email, String mobileNumber) {
+        // First, try finding by email if available
+        if (email != null && !email.isBlank()) {
+            try {
+                Optional<Customers> customerByEmail = findByEmail(email);
+                if (customerByEmail.isPresent()) {
+                    log.debug("Found customer by email '{}'.", email);
+                    return customerByEmail;
+                }
+            } catch (RuntimeException e) {
+                log.warn("Error when trying to find customer by email '{}' as part of findByEmailOrMobileNumber. Proceeding to check mobile number. Error: {}", email, e.getMessage());
+                // Don't rethrow, attempt mobile number lookup
+            }
+        }
+
+        // If not found by email, or email was not provided/had an error, try finding by mobile number
+        if (mobileNumber != null && !mobileNumber.isBlank()) {
+            try {
+                Optional<Customers> customerByMobile = findByMobileNumber(mobileNumber);
+                if (customerByMobile.isPresent()) {
+                    log.debug("Found customer by mobile number '{}'.", mobileNumber);
+                    return customerByMobile;
+                }
+            } catch (RuntimeException e) {
+                log.warn("Error when trying to find customer by mobile number '{}' as part of findByEmailOrMobileNumber. Error: {}", mobileNumber, e.getMessage());
+                // Don't rethrow, just return empty
+            }
+        }
+
+        log.debug("No customer found by email '{}' or mobile number '{}'.",
+                (email != null ? email : "N/A"), (mobileNumber != null ? mobileNumber : "N/A"));
+        return Optional.empty();
     }
 }

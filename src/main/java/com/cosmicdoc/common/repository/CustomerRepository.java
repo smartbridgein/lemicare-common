@@ -9,8 +9,10 @@ public interface CustomerRepository extends TransactionalRepository<Customers, S
 
     Optional<Customers> findByEmail(String email);
 
-    Optional<Customers> findByPhone(String mobileNumber);
+    Optional<Customers> findByMobileNumber(String mobileNumber);
 
     void updateLastLogin(String identityId);
+
+    Optional<Customers> findByEmailOrMobileNumber(String email, String mobileNumber);
 
 }

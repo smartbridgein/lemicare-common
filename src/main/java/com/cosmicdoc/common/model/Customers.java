@@ -2,6 +2,7 @@ package com.cosmicdoc.common.model;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.annotation.DocumentId;
+import com.google.cloud.firestore.annotation.PropertyName; // Import this for mapping
 import lombok.*;
 
 import java.util.Collections;
@@ -39,6 +40,14 @@ public class Customers implements PersistableEntity, PersonProfile {
     // List of Organization IDs this customer is a member of (e.g., patient of these clinics)
     private List<String> organizations;
 
+    // --- NEW: Field to map the "types" field from Firestore ---
+    // @PropertyName tells Firestore's CustomClassMapper to map the database field "types"
+    // to this Java field named 'customerTypes'.
+    // This resolves the "No setter/field for types found" warning.
+    @PropertyName("types")
+    private List<String> customerTypes;
+
+
     // --- PersistableEntity Implementation ---
     @Override
     public String getId() {
@@ -63,17 +72,22 @@ public class Customers implements PersistableEntity, PersonProfile {
 
     @Override
     public List<String> getTypes() {
-        // A Customer entity is typically just of type "CUSTOMER".
-        // If a customer can have other specific types, you would add a 'private List<String> type;' field
-        // to this class and return that.
-        return Collections.singletonList("CUSTOMER");
+        // This method now returns the value from the 'customerTypes' field if it's set.
+        // It falls back to Collections.singletonList("CUSTOMER") if 'customerTypes' is null or empty.
+        // This ensures the PersonProfile contract is met and Firestore data is used if available.
+        if (customerTypes != null && !customerTypes.isEmpty()) {
+            return customerTypes;
+        }
+        return Collections.singletonList("CUSTOMER"); // Default/fallback type
     }
 
     @Override
     public boolean hasType(String typeToCheck) {
-        // Since we hardcode "CUSTOMER" as the type, we check against that.
-        // If you had a 'type' field, you'd check this.type.contains(typeToCheck);
-        return "CUSTOMER".equals(typeToCheck);
+        // This method now checks against the 'customerTypes' field first.
+        if (customerTypes != null) {
+            return customerTypes.contains(typeToCheck);
+        }
+        return "CUSTOMER".equals(typeToCheck); // Fallback if no specific types are set
     }
 
     // --- HashCode and Equals based on customerId ---

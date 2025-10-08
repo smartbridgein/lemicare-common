@@ -37,6 +37,8 @@ public class Identities implements PersistableEntity, PersonProfile {
 
     private Timestamp lastLoginAt;
 
+    private String mobileNumber;
+
     // --- PersistableEntity Implementation ---
     @Override
     public String getId() {

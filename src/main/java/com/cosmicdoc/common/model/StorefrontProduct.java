@@ -19,7 +19,6 @@ public class StorefrontProduct {
 
     private String organizationId; // For security rules and collection group queries
 
-    //private String branchId; // To link with a specific branch/store
 
     // --- Core CMS Fields ---
     private String richDescription; // Can store HTML or Markdown

@@ -63,6 +63,7 @@ public class OrganizationMember implements PersistableEntity {
     public static class Permission {
         private String resource; // e.g., "PATIENT_RECORD", "APPOINTMENT"
         private String action;   // e.g., "READ", "WRITE", "DELETE"
-        private String branchId; // Specific branch if permission is branch-scoped
+        private String branchId;
+        private Boolean isDefault;// Specific branch if permission is branch-scoped
     }
 }

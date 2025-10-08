@@ -23,7 +23,8 @@ public class Address {
     private String addressType; // e.g., "DELIVERY", "BILLING", "HOME", "WORK"
     private String phoneNumber;
     private String notes; // Delivery instructions
-    private boolean isDefault; // e.g., if customer has multiple addresses
+    private boolean isDefaultBilling; // e.g., if customer has multiple addresses
+    private boolean isDefaultDelivery;
     private boolean isActive; // e.g., if an address becomes invalid
     private String contactPerson;
     private String contactEmail;
