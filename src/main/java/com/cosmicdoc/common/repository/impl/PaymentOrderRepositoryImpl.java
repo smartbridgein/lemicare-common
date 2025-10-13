@@ -24,9 +24,9 @@ public class PaymentOrderRepositoryImpl implements PaymentOrderRepository {
     }
 
     // --- THIS IS THE CRITICAL CHANGE ---
-    private CollectionReference getCollection(String organizationId, String branchId) {
+    private CollectionReference getCollection(String organizationId) {
         return firestore.collection("organizations").document(organizationId)
-                .collection("branches").document(branchId)
+               // .collection("branches").document(branchId)
                 .collection(COLLECTION_NAME);
     }
 
@@ -35,7 +35,7 @@ public class PaymentOrderRepositoryImpl implements PaymentOrderRepository {
         // ... validation checks ...
         try {
             // The getCollection method now requires the branchId from the object.
-            getCollection(paymentOrder.getOrganizationId(), paymentOrder.getBranchId())
+            getCollection(paymentOrder.getOrganizationId())
                     .document(paymentOrder.getOrderId())
                     .set(paymentOrder).get();
             return paymentOrder;
@@ -45,9 +45,9 @@ public class PaymentOrderRepositoryImpl implements PaymentOrderRepository {
     }
 
     @Override
-    public Optional<PaymentOrder> findByRazorpayOrderId(String organizationId, String branchId, String razorpayOrderId) {
+    public Optional<PaymentOrder> findByRazorpayOrderId(String organizationId, String razorpayOrderId) {
         try {
-            Query query = getCollection(organizationId, branchId) // Use the branch-specific collection
+            Query query = getCollection(organizationId) // Use the branch-specific collection
                     .whereEqualTo("razorpayOrderId", razorpayOrderId)
                     .limit(1);
 
@@ -65,10 +65,10 @@ public class PaymentOrderRepositoryImpl implements PaymentOrderRepository {
      * Implementation for finding a payment order by its primary key (document ID).
      */
     @Override
-    public Optional<PaymentOrder> findById(String organizationId, String branchId, String orderId) {
+    public Optional<PaymentOrder> findById(String organizationId, String orderId) {
         try {
             // 1. Get a direct reference to the document using the full path and the document ID.
-            DocumentSnapshot document = getCollection(organizationId, branchId).document(orderId).get().get();
+            DocumentSnapshot document = getCollection(organizationId).document(orderId).get().get();
 
             // 2. Check if the document exists.
             if (document.exists()) {

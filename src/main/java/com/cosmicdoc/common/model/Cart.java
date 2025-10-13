@@ -1,5 +1,6 @@
 package com.cosmicdoc.common.model;
 
+import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.annotation.DocumentId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,9 +20,9 @@ public class Cart {
     private String userId;
     private String guestId;
     private String status; // ACTIVE, ABANDONED, CONVERTED_TO_ORDER, EXPIRED
-    private LocalDateTime createdAt;
-    private LocalDateTime lastModifiedAt;
-    private LocalDateTime expiresAt; // For guest carts or abandoned carts
+    private Timestamp createdAt;
+    private Timestamp lastModifiedAt;
+    private Timestamp expiresAt; // For guest carts or abandoned carts
     private int totalItems; // Denormalized count
     private double subtotalAmount; // Denormalized sum of item prices
 }

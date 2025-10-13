@@ -40,5 +40,8 @@ public class StorefrontProduct {
     private String taxProfileId;
     private String gstType;
 
+    private PhysicalDimensions dimensions; // Embeds height, width, length, unit
+    private Weight weight;                 // Embeds weight value and unit
+
 
 }

@@ -1,5 +1,6 @@
 package com.cosmicdoc.common.model;
 
+import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.annotation.DocumentId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,11 +20,11 @@ public class CartItem {
     private String cartId;
     private String productId;
     private String productName;
-    private String productImageUrl;
+   // private String productImageUrl;
     private double priceAtAddToCart;
     private int quantity;
     private double itemTotalPrice; // priceAtAddToCart * quantity
-    private LocalDateTime addedAt;
-    private LocalDateTime lastModifiedAt;
+    private Timestamp addedAt;
+    private Timestamp lastModifiedAt;
     private String sku;
 }

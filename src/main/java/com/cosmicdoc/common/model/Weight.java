@@ -11,9 +11,7 @@ import java.math.BigDecimal; // Use BigDecimal for precise measurements
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PhysicalDimensions {
-    private BigDecimal height; // e.g., 10.5
-    private BigDecimal width;  // e.g., 5.0
-    private BigDecimal length; // e.g., 20.0
-    private String unit;       // e.g., "cm", "inch", "mm". CRITICAL for interpretation.
+public class Weight {
+    private BigDecimal value; // e.g., 0.750
+    private String unit;      // e.g., "kg", "g", "lb", "oz". CRITICAL for interpretation.
 }
