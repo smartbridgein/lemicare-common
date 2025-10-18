@@ -26,9 +26,9 @@ public class DeliveryOrderRepositoryImpl implements DeliveryOrderRepository {
        this.firestore = firestore;
    }
     // Helper to get the correctly nested collection based on your multi-tenant structure
-    private CollectionReference getCollection(String organizationId, String branchId) {
+    private CollectionReference getCollection(String organizationId) {
         return firestore.collection("organizations").document(organizationId)
-                .collection("branches").document(branchId)
+               // .collection("branches").document(branchId)
                 .collection(COLLECTION_NAME);
     }
 
@@ -38,7 +38,7 @@ public class DeliveryOrderRepositoryImpl implements DeliveryOrderRepository {
             throw new IllegalArgumentException("DeliveryOrder ID for saving cannot be null or empty.");
         }
         try {
-            getCollection(deliveryOrder.getOrganizationId(), deliveryOrder.getBranchId())
+            getCollection(deliveryOrder.getOrganizationId())
                     .document(deliveryOrder.getId())
                     .set(deliveryOrder).get(); // .get() waits for the operation to complete
             return deliveryOrder;
@@ -49,9 +49,9 @@ public class DeliveryOrderRepositoryImpl implements DeliveryOrderRepository {
     }
 
     @Override
-    public Optional<DeliveryOrder> findByOrderIdAndOrganizationIdAndBranchId(String orderId, String organizationId, String branchId) {
+    public Optional<DeliveryOrder> findByOrderIdAndOrganizationIdAndBranchId(String orderId, String organizationId) {
         try {
-            Query query = getCollection(organizationId, branchId)
+            Query query = getCollection(organizationId)
                     .whereEqualTo("orderId", orderId)
                     .limit(1);
 
@@ -86,9 +86,9 @@ public class DeliveryOrderRepositoryImpl implements DeliveryOrderRepository {
     }
 
     @Override
-    public List<DeliveryOrder> findByOrganizationIdAndBranchIdAndStatus(String organizationId, String branchId, DeliveryStatus status) {
+    public List<DeliveryOrder> findByOrganizationIdAndBranchIdAndStatus(String organizationId, DeliveryStatus status) {
         try {
-            Query query = getCollection(organizationId, branchId)
+            Query query = getCollection(organizationId)
                     .whereEqualTo("status", status.name()); // Enums are stored as Strings
 
             QuerySnapshot querySnapshot = query.get().get();
@@ -99,7 +99,7 @@ public class DeliveryOrderRepositoryImpl implements DeliveryOrderRepository {
                     .map(doc -> doc.toObject(DeliveryOrder.class))
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            log.error("Error finding by status '{}' in org '{}'/branch '{}'", status, organizationId, branchId, e);
+            log.error("Error finding by status '{}' in org '{}'", status, organizationId, e);
             throw new RuntimeException("Error during Firestore query", e);
         }
     }
@@ -126,11 +126,11 @@ public class DeliveryOrderRepositoryImpl implements DeliveryOrderRepository {
     }
 
     @Override
-    public List<DeliveryOrder> findByOrganizationIdAndBranchId(String organizationId, String branchId) {
-        log.info("Fetching all delivery orders for organization '{}' and branch '{}'", organizationId, branchId);
+    public List<DeliveryOrder> findByOrganizationIdAndBranchId(String organizationId) {
+        log.info("Fetching all delivery orders for organization '{}'", organizationId);
         try {
             // 1. Get a reference to the specific, nested collection for the given branch.
-            CollectionReference collectionRef = getCollection(organizationId, branchId);
+            CollectionReference collectionRef = getCollection(organizationId);
 
             // 2. Asynchronously retrieve all documents in the collection.
             // The first .get() returns an ApiFuture, the second .get() waits for it to complete.
@@ -148,8 +148,8 @@ public class DeliveryOrderRepositoryImpl implements DeliveryOrderRepository {
 
         } catch (InterruptedException | ExecutionException e) {
             // 5. Catch any low-level Firestore errors.
-            log.error("Error fetching all delivery orders for organization '{}' and branch '{}'",
-                    organizationId, branchId, e);
+            log.error("Error fetching all delivery orders for organization '{}'",
+                    organizationId, e);
 
             // 6. Wrap in a RuntimeException to signal a failure in the data access layer.
             throw new RuntimeException("Failed to fetch delivery orders from Firestore", e);
@@ -157,11 +157,11 @@ public class DeliveryOrderRepositoryImpl implements DeliveryOrderRepository {
     }
 
     @Override
-    public Optional<DeliveryOrder> findById(String organizationId, String branchId, String deliveryId) {
+    public Optional<DeliveryOrder> findById(String organizationId, String deliveryId) {
         // 1. Construct the full, specific path to the document.
         // This is the core of the logic for a nested data model.
         try {
-            DocumentReference docRef = getCollection(organizationId, branchId)
+            DocumentReference docRef = getCollection(organizationId)
                     .document(deliveryId);
 
             // 2. Asynchronously fetch the document snapshot from Firestore.
@@ -182,8 +182,8 @@ public class DeliveryOrderRepositoryImpl implements DeliveryOrderRepository {
         } catch (InterruptedException | ExecutionException e) {
             // This block catches low-level errors with the Firestore connection or task execution.
             // It's crucial to log this for debugging production issues.
-            log.error("Error retrieving document with ID '{}' from branch '{}' in org '{}'",
-                    deliveryId, branchId, organizationId, e);
+            log.error("Error retrieving document with ID '{}'  in org '{}'",
+                    deliveryId, organizationId, e);
 
             // We re-throw as a RuntimeException to signal a failure in the data access layer.
             throw new RuntimeException("Error fetching document from Firestore", e);

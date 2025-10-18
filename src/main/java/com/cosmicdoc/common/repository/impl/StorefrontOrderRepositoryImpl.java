@@ -1,6 +1,7 @@
 package com.cosmicdoc.common.repository.impl;
 
 import com.cosmicdoc.common.model.StorefrontOrder;
+import com.cosmicdoc.common.model.StorefrontProduct;
 import com.cosmicdoc.common.repository.StorefrontOrderRepository;
 import com.google.cloud.firestore.CollectionReference;
 import com.google.cloud.firestore.Firestore;
@@ -8,6 +9,7 @@ import com.google.cloud.firestore.Transaction;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 @Repository
@@ -42,6 +44,16 @@ public class StorefrontOrderRepositoryImpl implements StorefrontOrderRepository 
             return order;
         } catch (ExecutionException | InterruptedException e) {
             throw new RuntimeException("Error saving storefront order with ID: " + order.getOrderId(), e);
+        }
+    }
+
+    @Override
+    public Optional<StorefrontOrder> findById(String organizationId, String orderId) {
+        try {
+            var doc = getCollection(organizationId).document(orderId).get().get();
+            return doc.exists() ? Optional.ofNullable(doc.toObject(StorefrontOrder.class)) : Optional.empty();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error finding storefront product by ID: " + orderId, e);
         }
     }
 
