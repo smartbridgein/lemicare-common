@@ -28,7 +28,7 @@ public class DeliveryOrderRepositoryImpl implements DeliveryOrderRepository {
     // Helper to get the correctly nested collection based on your multi-tenant structure
     private CollectionReference getCollection(String organizationId) {
         return firestore.collection("organizations").document(organizationId)
-               // .collection("branches").document(branchId)
+                //.collection("branches").document(branchId)
                 .collection(COLLECTION_NAME);
     }
 
@@ -86,7 +86,7 @@ public class DeliveryOrderRepositoryImpl implements DeliveryOrderRepository {
     }
 
     @Override
-    public List<DeliveryOrder> findByOrganizationIdAndBranchIdAndStatus(String organizationId, DeliveryStatus status) {
+    public List<DeliveryOrder> findByOrganizationIdAndBranchIdAndStatus(String organizationId, DeliveryStatus status,String customerId) {
         try {
             Query query = getCollection(organizationId)
                     .whereEqualTo("status", status.name()); // Enums are stored as Strings
@@ -108,7 +108,7 @@ public class DeliveryOrderRepositoryImpl implements DeliveryOrderRepository {
     public List<DeliveryOrder> findByOrganizationIdAndStatus(String organizationId, DeliveryStatus status) {
         // This also requires a Collection Group query to search across all branches of an organization.
         try {
-            Query query = firestore.collectionGroup(COLLECTION_NAME)
+            Query query = getCollection(organizationId)
                     .whereEqualTo("organizationId", organizationId)
                     .whereEqualTo("status", status.name());
 
@@ -126,15 +126,17 @@ public class DeliveryOrderRepositoryImpl implements DeliveryOrderRepository {
     }
 
     @Override
-    public List<DeliveryOrder> findByOrganizationIdAndBranchId(String organizationId) {
+    public List<DeliveryOrder> findByOrganizationIdAndBranchId(String organizationId,String customerId) {
         log.info("Fetching all delivery orders for organization '{}'", organizationId);
         try {
             // 1. Get a reference to the specific, nested collection for the given branch.
-            CollectionReference collectionRef = getCollection(organizationId);
+            Query query = firestore.collectionGroup(COLLECTION_NAME)
+                    .whereEqualTo("organizationId", organizationId)
+                    .whereEqualTo("customerId", customerId);
 
             // 2. Asynchronously retrieve all documents in the collection.
             // The first .get() returns an ApiFuture, the second .get() waits for it to complete.
-            QuerySnapshot querySnapshot = collectionRef.get().get();
+            QuerySnapshot querySnapshot = query.get().get();
 
             // 3. Handle the common case where the collection is empty.
             if (querySnapshot.isEmpty()) {

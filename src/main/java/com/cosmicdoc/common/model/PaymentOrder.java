@@ -12,7 +12,7 @@ public class PaymentOrder {
     private String orderId; // Your internal system's ID (e.g., ULID)
     private String organizationId;
     private String branchId;
-
+    private String customerId;
 
     private String sourceService; // "OPD", "INVENTORY", etc.
     private String sourceInvoiceId; // Your internal invoice ID (e.g., "inv_123")

@@ -28,7 +28,7 @@ public interface DeliveryOrderRepository  {
      * Finds all deliveries for a specific branch with a given status.
      * Requires a composite index on (organizationId, branchId, status) in Firestore.
      */
-    List<DeliveryOrder> findByOrganizationIdAndBranchIdAndStatus(String organizationId, DeliveryStatus status);
+    List<DeliveryOrder> findByOrganizationIdAndBranchIdAndStatus(String organizationId, DeliveryStatus status,String customerId);
 
     /**
      * Finds all deliveries for an entire organization with a given status.
@@ -36,7 +36,7 @@ public interface DeliveryOrderRepository  {
      */
     List<DeliveryOrder> findByOrganizationIdAndStatus(String organizationId, DeliveryStatus status);
 
-    List<DeliveryOrder> findByOrganizationIdAndBranchId(String orgId);
+    List<DeliveryOrder> findByOrganizationIdAndBranchId(String orgId,String customerId);
 
     DeliveryOrder save(DeliveryOrder deliveryOrder);
 

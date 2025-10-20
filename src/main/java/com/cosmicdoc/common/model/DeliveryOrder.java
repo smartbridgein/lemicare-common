@@ -31,10 +31,11 @@ public class DeliveryOrder {
     private String orderId;
     private String organizationId;
     private String branchId;
+    private String customerId;
 
     // --- Partner Information ---
     private String partnerName;
-    private String partnerTrackingId; // This should be indexed in Firestore for lookups
+    private String partnerTrackingId; // This should be indexed in Firestore for lookups awbcode
 
     // --- Status and Details ---
     private DeliveryStatus status; // Enums are stored as Strings by default, which is perfect.
@@ -44,6 +45,8 @@ public class DeliveryOrder {
     private String recipientPhone;
     private BigDecimal deliveryFee;
     private String notes;
+    private int shipmentId;
+    private int courierId;
 
     // --- Timestamps for Auditing ---
 
