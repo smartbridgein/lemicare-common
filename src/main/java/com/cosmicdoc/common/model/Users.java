@@ -36,6 +36,10 @@ public class Users implements PersistableEntity, PersonProfile {
 
     private String hashedPassword; // This should ideally be null/empty after migration to Identities
 
+    private String DOB;
+
+    private String gender;
+
     // --- PersistableEntity Implementation ---
     @Override
     public String getId() {

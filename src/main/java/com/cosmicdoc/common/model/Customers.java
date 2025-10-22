@@ -47,6 +47,10 @@ public class Customers implements PersistableEntity, PersonProfile {
     @PropertyName("types")
     private List<String> customerTypes;
 
+    private String DOB;
+
+    private String gender;
+
 
     // --- PersistableEntity Implementation ---
     @Override
