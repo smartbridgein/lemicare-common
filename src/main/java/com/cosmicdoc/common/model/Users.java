@@ -2,6 +2,7 @@ package com.cosmicdoc.common.model;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.annotation.DocumentId;
+import com.google.cloud.firestore.annotation.PropertyName;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -62,18 +63,27 @@ public class Users implements PersistableEntity, PersonProfile {
         return displayName;
     }
 
+    @PropertyName("types")
+    private List<String> userTypes;
+
     @Override
     public List<String> getTypes() {
-        // A User entity is typically a "STAFF" type in your B2B context.
-        // If a User can have other specific types (e.g., "SUPER_ADMIN_USER", "EXTERNAL_CONSULTANT"),
-        // you would add a 'private List<String> type;' field to this class and return that.
-        return Collections.singletonList("STAFF"); // Default to STAFF
+        // This method now returns the value from the 'customerTypes' field if it's set.
+        // It falls back to Collections.singletonList("CUSTOMER") if 'customerTypes' is null or empty.
+        // This ensures the PersonProfile contract is met and Firestore data is used if available.
+        if (userTypes != null && !userTypes.isEmpty()) {
+            return userTypes;
+        }
+        return Collections.singletonList("STAFF"); // Default/fallback type
     }
 
     @Override
     public boolean hasType(String typeToCheck) {
-        // Since we hardcode "STAFF" as the type, we check against that.
-        return "STAFF".equals(typeToCheck);
+        // This method now checks against the 'customerTypes' field first.
+        if (userTypes != null) {
+            return userTypes.contains(typeToCheck);
+        }
+        return "STAFF".equals(typeToCheck); // Fallback if no specific types are set
     }
 
     // --- Utility Methods for 'organizations' list (if needed) ---
