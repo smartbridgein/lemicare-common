@@ -21,6 +21,7 @@ public class Branch implements PersistableEntity{
     private String shiprocketPickupLocation;
     private String defaultCourierPartner;
     private Address primaryPickupAddress;
+    private String gstin;
 
     @Override
     public String getId() {
