@@ -17,6 +17,7 @@ public class Branch implements PersistableEntity{
     private String organizationId;
     private String name;
     private String address;
+    private String branchCode;
     private Timestamp createdAt;
     private String shiprocketPickupLocation;
     private String defaultCourierPartner;

@@ -12,7 +12,10 @@ public enum IdentityType {
     CUSTOMER("CUSTOMER", "Represents an external customer account."),
     ADMIN("ADMIN", "Represents an internal administrator account."),
     EMPLOYEE("EMPLOYEE", "Represents an internal employee account."),
-    SYSTEM("SYSTEM", "Represents an automated system or service account.");
+    SYSTEM("SYSTEM", "Represents an automated system or service account."),
+    VIPCUSTOMER("VIPCUSTOMER", "Represents an external customer account."),
+    SALESPERSON("SALESPERSON","Represents an internal salesperson account");
+
 
     private final String value;
     private final String description;

@@ -18,28 +18,28 @@ import java.util.Objects;
 public class Users implements PersistableEntity, PersonProfile {
 
     @DocumentId
-    private String userId; // Unique ID for this B2B user profile
+    private String userId; // Unique ID for this B2B user profile (links to Identities.identityId)
 
-    private String email;
-
+    private String email; // Denormalized from Identities for queryability
     private String displayName;
+    private String mobileNumber; // Denormalized from Identities for queryability
 
-    private String mobileNumber;
+    private String hashedPassword;
 
     private UserStatus status; // ACTIVE, PENDING_VERIFICATION, DISABLED
 
-    // List of Organization IDs this user is associated with (e.g., Staff for these clinics)
+    // List of Organization IDs this user is associated with (e.g., Staff for clinics, Salesperson for retail orgs)
     private List<String> organizations;
 
     private Timestamp createdAt;
-
-    private Timestamp lastLoginAt;
-
-    private String hashedPassword; // This should ideally be null/empty after migration to Identities
+    private Timestamp lastLoginAt; // Last time this specific user profile was actively used/updated
 
     private String DOB;
-
     private String gender;
+
+    // This field indicates the specific roles/types of this B2B user (e.g., "STAFF", "DOCTOR", "SALESPERSON", "MANAGER")
+    @PropertyName("types")
+    private List<String> userTypes;
 
     // --- PersistableEntity Implementation ---
     @Override
@@ -63,30 +63,17 @@ public class Users implements PersistableEntity, PersonProfile {
         return displayName;
     }
 
-    @PropertyName("types")
-    private List<String> userTypes;
-
     @Override
     public List<String> getTypes() {
-        // This method now returns the value from the 'customerTypes' field if it's set.
-        // It falls back to Collections.singletonList("CUSTOMER") if 'customerTypes' is null or empty.
-        // This ensures the PersonProfile contract is met and Firestore data is used if available.
-        if (userTypes != null && !userTypes.isEmpty()) {
-            return userTypes;
-        }
-        return Collections.singletonList("STAFF"); // Default/fallback type
+        return userTypes != null ? userTypes : Collections.emptyList();
     }
 
     @Override
     public boolean hasType(String typeToCheck) {
-        // This method now checks against the 'customerTypes' field first.
-        if (userTypes != null) {
-            return userTypes.contains(typeToCheck);
-        }
-        return "STAFF".equals(typeToCheck); // Fallback if no specific types are set
+        return userTypes != null && userTypes.contains(typeToCheck);
     }
 
-    // --- Utility Methods for 'organizations' list (if needed) ---
+    // --- Utility Methods for 'organizations' list ---
     public void addOrganization(String orgId) {
         if (this.organizations == null) {
             this.organizations = new ArrayList<>();
@@ -99,6 +86,22 @@ public class Users implements PersistableEntity, PersonProfile {
     public void removeOrganization(String orgId) {
         if (this.organizations != null) {
             this.organizations.remove(orgId);
+        }
+    }
+
+    // --- Utility Methods for 'userTypes' list ---
+    public void addType(String newType) {
+        if (this.userTypes == null) {
+            this.userTypes = new ArrayList<>();
+        }
+        if (!this.userTypes.contains(newType)) {
+            this.userTypes.add(newType);
+        }
+    }
+
+    public void removeType(String typeToRemove) {
+        if (this.userTypes != null) {
+            this.userTypes.remove(typeToRemove);
         }
     }
 

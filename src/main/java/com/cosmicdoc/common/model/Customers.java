@@ -5,6 +5,7 @@ import com.google.cloud.firestore.annotation.DocumentId;
 import com.google.cloud.firestore.annotation.PropertyName; // Import this for mapping
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -16,40 +17,31 @@ import java.util.Objects;
 public class Customers implements PersistableEntity, PersonProfile {
 
     @DocumentId
-    private String customerId;
+    private String customerId; // Unique ID for this B2C customer profile (links to Identities.identityId)
 
-    private String email;
-
+    private String email; // Denormalized from Identities for queryability
     private String displayName;
-
-    private String mobileNumber;
+    private String mobileNumber; // Denormalized from Identities for queryability
 
     private CustomerStatus status; // ACTIVE, INACTIVE, GUEST
 
-    private List<Address> addresses; // Assuming you have an Address POJO
+    private List<Address> addresses; // Common addresses
 
     private Timestamp createdAt;
+    private Timestamp lastLoginAt; // Last time this specific customer profile was actively used/updated
 
-    private Timestamp lastLoginAt;
-
-    private String hashedPassword; // Consider if this should be here or only in Identities
+    private String DOB;
+    private String gender;
 
     // Optional link if this customer also has a B2B user profile (e.g., a doctor who is also a patient)
     private String linkedUserId; // reference to Users.userId
 
-    // List of Organization IDs this customer is a member of (e.g., patient of these clinics)
+    // List of Organization IDs this customer is a member of (e.g., patient of these clinics, shopper at retail stores)
     private List<String> organizations;
 
-    // --- NEW: Field to map the "types" field from Firestore ---
-    // @PropertyName tells Firestore's CustomClassMapper to map the database field "types"
-    // to this Java field named 'customerTypes'.
-    // This resolves the "No setter/field for types found" warning.
+    // This field indicates the specific types of this B2C customer (e.g., "CUSTOMER", "PATIENT", "VIP_CUSTOMER")
     @PropertyName("types")
     private List<String> customerTypes;
-
-    private String DOB;
-
-    private String gender;
 
 
     // --- PersistableEntity Implementation ---
@@ -76,22 +68,44 @@ public class Customers implements PersistableEntity, PersonProfile {
 
     @Override
     public List<String> getTypes() {
-        // This method now returns the value from the 'customerTypes' field if it's set.
-        // It falls back to Collections.singletonList("CUSTOMER") if 'customerTypes' is null or empty.
-        // This ensures the PersonProfile contract is met and Firestore data is used if available.
-        if (customerTypes != null && !customerTypes.isEmpty()) {
-            return customerTypes;
-        }
-        return Collections.singletonList("CUSTOMER"); // Default/fallback type
+        return customerTypes != null ? customerTypes : Collections.emptyList();
     }
 
     @Override
     public boolean hasType(String typeToCheck) {
-        // This method now checks against the 'customerTypes' field first.
-        if (customerTypes != null) {
-            return customerTypes.contains(typeToCheck);
+        return customerTypes != null && customerTypes.contains(typeToCheck);
+    }
+
+    // --- Utility Methods for 'organizations' list ---
+    public void addOrganization(String orgId) {
+        if (this.organizations == null) {
+            this.organizations = new ArrayList<>();
         }
-        return "CUSTOMER".equals(typeToCheck); // Fallback if no specific types are set
+        if (!this.organizations.contains(orgId)) {
+            this.organizations.add(orgId);
+        }
+    }
+
+    public void removeOrganization(String orgId) {
+        if (this.organizations != null) {
+            this.organizations.remove(orgId);
+        }
+    }
+
+    // --- Utility Methods for 'customerTypes' list ---
+    public void addType(String newType) {
+        if (this.customerTypes == null) {
+            this.customerTypes = new ArrayList<>();
+        }
+        if (!this.customerTypes.contains(newType)) {
+            this.customerTypes.add(newType);
+        }
+    }
+
+    public void removeType(String typeToRemove) {
+        if (this.customerTypes != null) {
+            this.customerTypes.remove(typeToRemove);
+        }
     }
 
     // --- HashCode and Equals based on customerId ---
