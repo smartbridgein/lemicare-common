@@ -1,5 +1,7 @@
 package com.cosmicdoc.common.model;
 
+import com.cosmicdoc.common.util.FirestoreTimestampDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.cloud.Timestamp;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +27,6 @@ public class BatchAllocation {
      * The quantity of units taken from this specific batch for the sale item.
      */
     private int quantityTaken;
-
+    @JsonDeserialize(using = FirestoreTimestampDeserializer.class)
     private Timestamp expiryDate;
 }

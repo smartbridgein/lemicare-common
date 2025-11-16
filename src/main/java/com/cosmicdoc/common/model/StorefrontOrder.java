@@ -34,5 +34,5 @@ public class StorefrontOrder {
     private String status; // "PENDING_PAYMENT", "PENDING_CONFIRMATION", "SHIPPED", "DELIVERED", "CANCELLED"
     private Timestamp createdAt;
 
-    private List<StorefrontOrderItem> items;
+    private List<SaleItem> items;
 }

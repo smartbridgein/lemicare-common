@@ -13,6 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 public class SaleItem {
     private String medicineId;
+    private String productName;
     //private String batchNo; // The batch this was sold from
     private List<BatchAllocation> batchAllocations;
     private int quantity;
