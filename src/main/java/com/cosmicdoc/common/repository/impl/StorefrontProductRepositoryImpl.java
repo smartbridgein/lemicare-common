@@ -150,4 +150,13 @@ public class StorefrontProductRepositoryImpl implements StorefrontProductReposit
             throw new RuntimeException("Error fetching paginated visible products", e);
         }
     }
+
+    @Override
+    public void deleteByProductId(String organizationId, String productId) {
+        try {
+            getCollection(organizationId).document(productId).delete().get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error deleting storefront category", e);
+        }
+    }
 }

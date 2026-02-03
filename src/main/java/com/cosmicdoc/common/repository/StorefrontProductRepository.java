@@ -35,4 +35,6 @@ public interface StorefrontProductRepository {
     List<StorefrontProduct> findAllVisibleByCategoryId(String organizationId, String categoryId);
 
     Page<StorefrontProduct> findAllVisible(String organizationId, String categoryId, int pageSize, @Nullable String startAfter);
+
+    void deleteByProductId(String organizationId,String productId);
 }
