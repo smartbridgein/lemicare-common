@@ -1,99 +1,161 @@
 package com.cosmicdoc.common.repository.impl;
 
-import com.cosmicdoc.common.util.CursorPage;
+import com.cosmicdoc.common.model.StorefrontProduct;
+import com.cosmicdoc.common.repository.StorefrontProductRepository;
 import com.cosmicdoc.common.response.CursorPayload;
+import com.cosmicdoc.common.util.CursorPage;
 import com.cosmicdoc.common.util.CursorUtil;
-import com.google.cloud.Timestamp;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
-import com.google.cloud.firestore.Query;
-import com.google.cloud.firestore.QueryDocumentSnapshot;
+import com.google.cloud.firestore.*;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
-public abstract class FirestoreCursorRepository<T> {
+@Repository
 
-    protected final Firestore firestore;
+public class StorefrontProductRepositoryImpl
+        extends FirestoreCursorRepository<StorefrontProduct>
+        implements StorefrontProductRepository {
 
-    protected FirestoreCursorRepository(Firestore firestore) {
-        this.firestore = firestore;
+
+    private static final String COLLECTION_NAME = "storefront_products";
+
+    public StorefrontProductRepositoryImpl (Firestore firestore) {
+        super(firestore);
+    }
+    /**
+     * CORRECTED: Helper now gets the sub-collection directly under the organization.
+     */
+    private CollectionReference getCollection(String organizationId) {
+        return firestore.collection("organizations").document(organizationId).collection(COLLECTION_NAME);
     }
 
-    protected CursorPage<T> executePagedQuery(
-            Query baseQuery,
+    @Override
+    public StorefrontProduct save(StorefrontProduct product) {
+        if (product.getOrganizationId() == null || product.getProductId() == null) {
+            throw new IllegalArgumentException("OrganizationId and ProductId are required.");
+        }
+        try {
+            getCollection(product.getOrganizationId()).document(product.getProductId()).set(product).get();
+            return product;
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error saving storefront product", e);
+        }
+    }
+
+    /**
+     * CORRECTED: Renamed findByOrganizationIdAndProductId to the standard 'findById'
+     * and removed the redundant branchId parameter.
+     */
+    @Override
+    public Optional<StorefrontProduct> findById(String organizationId, String productId) {
+        try {
+            var doc = getCollection(organizationId).document(productId).get().get();
+            return doc.exists() ? Optional.ofNullable(doc.toObject(StorefrontProduct.class)) : Optional.empty();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error finding storefront product by ID: " + productId, e);
+        }
+    }
+
+    @Override
+    public List<StorefrontProduct> findAllByOrganizationId(String organizationId) {
+        try {
+            var documents = getCollection(organizationId).get().get().getDocuments();
+            return documents.stream()
+                    .map(doc -> doc.toObject(StorefrontProduct.class))
+                    .collect(Collectors.toList());
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error fetching all storefront products for organization: " + organizationId, e);
+        }
+    }
+
+    /**
+     * CORRECTED: Renamed from findAllVisibleByCategory.
+     * This query is now simpler as it doesn't need to be a collection group query.
+     */
+    @Override
+    public List<StorefrontProduct> findAllVisibleByCategoryId(String organizationId, String categoryId) {
+        try {
+            Query query = getCollection(organizationId)
+                    .whereEqualTo("categoryId", categoryId)
+                    .whereEqualTo("isVisible", true);
+
+            return query.get().get().getDocuments().stream()
+                    .map(doc -> doc.toObject(StorefrontProduct.class))
+                    .collect(Collectors.toList());
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error fetching visible products by category", e);
+        }
+    }
+
+    @Override
+    public CursorPage<StorefrontProduct> findAllVisible(
+            String orgId,
+            String categoryId,
             int pageSize,
-            String nextPageToken,
-            Class<T> clazz
+            String nextPageToken
     ) {
 
+        Query query = getCollection(orgId).whereEqualTo("visible",true);
+
+        if (categoryId != null && !categoryId.isBlank()) {
+            query = query.whereEqualTo("categoryId", categoryId);
+        }
+
+        query = query
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .orderBy(FieldPath.documentId(), Query.Direction.DESCENDING);
+
+        return executePagedQuery(
+                query,
+                pageSize,
+                nextPageToken,
+                StorefrontProduct.class
+        );
+    }
+    @Override
+    public void deleteByProductId(String organizationId, String productId) {
         try {
+            getCollection(organizationId).document(productId).delete().get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error deleting storefront category", e);
+        }
+    }
 
-            Query query = baseQuery;
+    @Override
+    public List<StorefrontProduct> findAllByOrganizationIdAndProductIdIn(
+            String organizationId,
+            List<String> productIds) {
 
-            if (nextPageToken != null && !nextPageToken.isBlank()) {
+        if (productIds == null || productIds.isEmpty()) {
+            return List.of();
+        }
 
-                CursorPayload cursor = CursorUtil.decode(nextPageToken);
+        try {
+            Query query = getCollection(organizationId)
+                    .whereIn("productId", productIds);
 
-                if (cursor.getCreatedAtSeconds() == null
-                        || cursor.getCreatedAtNanos() == null
-                        || cursor.getProductId() == null) {
+            return query.get().get().getDocuments()
+                    .stream()
+                    .map(doc -> doc.toObject(StorefrontProduct.class))
+                    .collect(Collectors.toList());
 
-                    throw new IllegalArgumentException("Invalid cursor payload");
-                }
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(
+                    "Error fetching storefront products by productIds", e);
+        }
+    }
 
-                query = query.startAfter(
-                        Timestamp.ofTimeSecondsAndNanos(
-                                cursor.getCreatedAtSeconds(),
-                                cursor.getCreatedAtNanos()
-                        ),
-                        cursor.getProductId()
-                );
-            }
 
-            query = query.limit(pageSize + 1);
 
-            List<QueryDocumentSnapshot> docs =
-                    query.get().get().getDocuments();
-
-            boolean hasNext = docs.size() > pageSize;
-
-            if (hasNext) {
-                docs = docs.subList(0, pageSize);
-            }
-
-            List<T> content = docs.stream()
-                    .map(doc -> doc.toObject(clazz))
-                    .toList();
-
-            String newToken = null;
-
-            if (!docs.isEmpty()) {
-
-                QueryDocumentSnapshot lastDoc =
-                        docs.get(docs.size() - 1);
-
-                Timestamp createdAt = lastDoc.getTimestamp("createdAt");
-
-                if (createdAt == null) {
-                    throw new RuntimeException(
-                            "createdAt missing in document: " + lastDoc.getId()
-                    );
-                }
-
-                CursorPayload payload = new CursorPayload(
-                        1,
-                        createdAt.getSeconds(),
-                        createdAt.getNanos(),
-                        lastDoc.getId()
-                );
-
-                newToken = CursorUtil.encode(payload);
-            }
-
-            return new CursorPage<>(content, newToken, hasNext);
-
-        } catch (Exception e) {
-            throw new RuntimeException("Pagination failed", e);
+    @Override
+    public void deleteByProductId(String organizationId, String productId) {
+        try {
+            getCollection(organizationId).document(productId).delete().get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error deleting storefront category", e);
         }
     }
 }

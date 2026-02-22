@@ -34,6 +34,7 @@ public interface StorefrontProductRepository {
      */
     List<StorefrontProduct> findAllVisibleByCategoryId(String organizationId, String categoryId);
 
+<<<<<<< HEAD
     CursorPage<StorefrontProduct> findAllVisible(String organizationId, String categoryId, int pageSize, @Nullable String startAfter);
 
     void deleteByProductId(String organizationId,String productId);
@@ -41,4 +42,9 @@ public interface StorefrontProductRepository {
     List<StorefrontProduct> findAllByOrganizationIdAndProductIdIn(
             String organizationId,
             List<String> productIds);
+=======
+    Page<StorefrontProduct> findAllVisible(String organizationId, String categoryId, int pageSize, @Nullable String startAfter);
+
+    void deleteByProductId(String organizationId,String productId);
+>>>>>>> 15385f654dd3749b1c4157ebdf96f0e8fd2728ec
 }

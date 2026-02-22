@@ -148,4 +148,15 @@ public class StorefrontProductRepositoryImpl
         }
     }
 
+<<<<<<< HEAD
+=======
+    @Override
+    public void deleteByProductId(String organizationId, String productId) {
+        try {
+            getCollection(organizationId).document(productId).delete().get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error deleting storefront category", e);
+        }
+    }
+>>>>>>> 15385f654dd3749b1c4157ebdf96f0e8fd2728ec
 }
