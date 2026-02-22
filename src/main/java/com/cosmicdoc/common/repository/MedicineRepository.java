@@ -5,6 +5,7 @@ import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Transaction;
 import com.google.cloud.firestore.WriteBatch;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
@@ -30,4 +31,6 @@ public interface MedicineRepository  {
      */
     void deleteByIdHard(String organizationId, String branchId, String medicineId);
     public int updateStockInTransactions(Transaction transaction, String organizationId, String branchId, String medicineId, int quantityChange);
+
+    Map<String, Integer> getMedicineStockCount(String orgId, String branchId, List<String> medicineIds);
 }

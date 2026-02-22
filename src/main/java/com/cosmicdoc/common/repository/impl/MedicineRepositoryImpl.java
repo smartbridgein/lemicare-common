@@ -315,5 +315,37 @@ public class MedicineRepositoryImpl implements MedicineRepository {
             throw e;
         }
     }
+
+    @Override
+    public Map<String, Integer> getMedicineStockCount(
+            String orgId,
+            String branchId,
+            List<String> medicineIds) {
+
+        if (medicineIds == null || medicineIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        try {
+            List<DocumentReference> refs = medicineIds.stream()
+                    .map(id -> getCollection(orgId, branchId).document(id))
+                    .toList();
+
+            List<DocumentSnapshot> snapshots =
+                    firestore.getAll(refs.toArray(new DocumentReference[0])).get();
+
+            return snapshots.stream()
+                    .collect(Collectors.toMap(
+                            DocumentSnapshot::getId,
+                            snapshot -> {
+                                Long stock = snapshot.getLong("quantityInStock");
+                                return stock != null ? stock.intValue() : 0;
+                            }
+                    ));
+
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error fetching medicine stock count", e);
+        }
+    }
 }
 

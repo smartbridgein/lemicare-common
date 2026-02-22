@@ -2,11 +2,10 @@ package com.cosmicdoc.common.repository.impl;
 
 import com.cosmicdoc.common.model.StorefrontProduct;
 import com.cosmicdoc.common.repository.StorefrontProductRepository;
-import com.cosmicdoc.common.util.FirestorePage;
-import com.google.api.gax.paging.Page;
+import com.cosmicdoc.common.response.CursorPayload;
+import com.cosmicdoc.common.util.CursorPage;
+import com.cosmicdoc.common.util.CursorUtil;
 import com.google.cloud.firestore.*;
-import com.google.firebase.database.annotations.Nullable;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,13 +15,15 @@ import java.util.stream.Collectors;
 
 @Repository
 
-public class StorefrontProductRepositoryImpl implements StorefrontProductRepository {
+public class StorefrontProductRepositoryImpl
+        extends FirestoreCursorRepository<StorefrontProduct>
+        implements StorefrontProductRepository {
 
-    private final Firestore firestore;
+
     private static final String COLLECTION_NAME = "storefront_products";
 
     public StorefrontProductRepositoryImpl (Firestore firestore) {
-        this.firestore = firestore;
+        super(firestore);
     }
     /**
      * CORRECTED: Helper now gets the sub-collection directly under the organization.
@@ -90,64 +91,61 @@ public class StorefrontProductRepositoryImpl implements StorefrontProductReposit
     }
 
     @Override
-    public Page<StorefrontProduct> findAllVisible(String organizationId, String categoryId, int pageSize, @Nullable String startAfter) {
+    public CursorPage<StorefrontProduct> findAllVisible(
+            String orgId,
+            String categoryId,
+            int pageSize,
+            String nextPageToken
+    ) {
+
+        Query query = getCollection(orgId).whereEqualTo("visible",true);
+
+        if (categoryId != null && !categoryId.isBlank()) {
+            query = query.whereEqualTo("categoryId", categoryId);
+        }
+
+        query = query
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .orderBy(FieldPath.documentId(), Query.Direction.DESCENDING);
+
+        return executePagedQuery(
+                query,
+                pageSize,
+                nextPageToken,
+                StorefrontProduct.class
+        );
+    }
+    @Override
+    public void deleteByProductId(String organizationId, String productId) {
         try {
-            // --- Base query: fetch only visible products ---
-            Query baseQuery = getCollection(organizationId)
-                    .whereEqualTo("isVisible", true)
-                    .orderBy("productId");
+            getCollection(organizationId).document(productId).delete().get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error deleting storefront category", e);
+        }
+    }
 
-            // --- Apply category filter only if categoryId is provided ---
-            if (categoryId != null && !categoryId.isEmpty()) {
-                baseQuery = baseQuery.whereEqualTo("categoryId", categoryId);
-            }
+    @Override
+    public List<StorefrontProduct> findAllByOrganizationIdAndProductIdIn(
+            String organizationId,
+            List<String> productIds) {
 
-            // --- Get total count for pagination ---
-            long totalElements = 0;
-            try {
-                totalElements = baseQuery.count().get().get().getCount();
-            } catch (Exception e) {
-                System.err.println("Error getting total count for products: " + e.getMessage());
-            }
+        if (productIds == null || productIds.isEmpty()) {
+            return List.of();
+        }
 
-            int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+        try {
+            Query query = getCollection(organizationId)
+                    .whereIn("productId", productIds);
 
-            // --- Apply pagination cursor if provided ---
-            Query paginatedQuery = baseQuery;
-            if (startAfter != null && !startAfter.isEmpty()) {
-                DocumentSnapshot startAfterDoc = getCollection(organizationId)
-                        .document(startAfter)
-                        .get()
-                        .get();
-
-                if (startAfterDoc.exists()) {
-                    paginatedQuery = baseQuery.startAfter(startAfterDoc);
-                } else {
-                    System.err.println("Warning: startAfter document with ID " + startAfter + " not found. Starting from beginning.");
-                }
-            }
-
-            // --- Fetch documents (limit + 1 to detect if next page exists) ---
-            List<QueryDocumentSnapshot> documents = paginatedQuery.limit(pageSize + 1).get().get().getDocuments();
-
-            List<StorefrontProduct> products = documents.stream()
-                    .limit(pageSize)
+            return query.get().get().getDocuments()
+                    .stream()
                     .map(doc -> doc.toObject(StorefrontProduct.class))
                     .collect(Collectors.toList());
 
-            // --- Handle pagination token & last-page flag ---
-            String nextPageToken = null;
-            boolean isLast = true;
-            if (documents.size() > pageSize) {
-                nextPageToken = products.get(products.size() - 1).getProductId();
-                isLast = false;
-            }
-
-            // --- Return FirestorePage response ---
-            return new FirestorePage<>(products, nextPageToken, pageSize, totalElements, totalPages, isLast);
-
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("Error fetching paginated visible products", e);
+            throw new RuntimeException(
+                    "Error fetching storefront products by productIds", e);
         }
     }
+
 }

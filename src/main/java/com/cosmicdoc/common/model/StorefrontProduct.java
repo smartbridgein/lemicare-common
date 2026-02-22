@@ -1,5 +1,6 @@
 package com.cosmicdoc.common.model;
 
+import com.google.cloud.Timestamp;
 import com.google.cloud.firestore.annotation.DocumentId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,6 +43,8 @@ public class StorefrontProduct {
 
     private PhysicalDimensions dimensions; // Embeds height, width, length, unit
     private Weight weight;                 // Embeds weight value and unit
+    private Timestamp createdAt;
+
 
 
 }

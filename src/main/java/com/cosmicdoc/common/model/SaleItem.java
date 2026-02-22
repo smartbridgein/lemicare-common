@@ -29,4 +29,7 @@ public class SaleItem {
     private double lineItemTotalAmount;
     private double taxRateApplied;
     private int returnedQuantity = 0;
+    private String sku;
+    private String hsn;
+
 }

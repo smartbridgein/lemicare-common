@@ -47,5 +47,6 @@ public class StorefrontOrderItem {
     private GstType gstType; // How tax was calculated (INCLUSIVE/EXCLUSIVE/NON_GST)
     private String taxProfileId;
     private double taxRateApplied;
+    private String hsn;
     private List<TaxComponent> taxComponents; // Breakdown of the tax (e.g., CGST, SGST)
 }

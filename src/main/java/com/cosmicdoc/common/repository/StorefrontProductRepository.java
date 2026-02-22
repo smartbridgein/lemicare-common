@@ -1,7 +1,7 @@
 package com.cosmicdoc.common.repository;
 
 import com.cosmicdoc.common.model.StorefrontProduct;
-import com.google.api.gax.paging.Page;
+import com.cosmicdoc.common.util.CursorPage;
 import com.google.firebase.database.annotations.Nullable;
 
 import java.util.List;
@@ -34,5 +34,11 @@ public interface StorefrontProductRepository {
      */
     List<StorefrontProduct> findAllVisibleByCategoryId(String organizationId, String categoryId);
 
-    Page<StorefrontProduct> findAllVisible(String organizationId, String categoryId, int pageSize, @Nullable String startAfter);
+    CursorPage<StorefrontProduct> findAllVisible(String organizationId, String categoryId, int pageSize, @Nullable String startAfter);
+
+    void deleteByProductId(String organizationId,String productId);
+
+    List<StorefrontProduct> findAllByOrganizationIdAndProductIdIn(
+            String organizationId,
+            List<String> productIds);
 }
