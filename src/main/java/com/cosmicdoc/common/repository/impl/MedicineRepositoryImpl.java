@@ -351,48 +351,22 @@ public class MedicineRepositoryImpl implements MedicineRepository {
     }
 
 
-    public int updateStockInTransactions(Transaction transaction, String orgId, String branchId, String medicineId, int delta) {
 
-        try {
-            DocumentReference docRef =
-                    getCollection(orgId, branchId).document(medicineId);
+    public void updateStockInTransactions(
+            Transaction transaction,
+            String orgId,
+            String branchId,
+            String medicineId,
+            int delta) {
 
-            // 🔹 First read current stock for validation
-            DocumentSnapshot snapshot = transaction.get(docRef).get();
+        DocumentReference docRef =
+                getCollection(orgId, branchId).document(medicineId);
 
-            if (!snapshot.exists()) {
-                throw new RuntimeException(
-                        "Medicine not found for stock update: " + medicineId);
-            }
-
-            Long currentStockLong = snapshot.getLong("quantityInStock");
-            int currentStock = currentStockLong != null
-                    ? currentStockLong.intValue()
-                    : 0;
-
-            int newStock = currentStock + delta;
-
-            // 🔥 Prevent negative stock
-            if (newStock < 0) {
-                throw new RuntimeException("Insufficient stock for medicine ID " + medicineId + ". Cannot reduce stock below zero.");
-            }
-
-            // 🔥 Atomic increment instead of full document set
-            transaction.update(docRef,
-                    "quantityInStock",
-                    FieldValue.increment(delta));
-
-            // Return the newly calculated stock level
-            return newStock;
-
-        } catch (ExecutionException | InterruptedException e) {
-            log.error("Firestore transaction operation failed for medicine {} (org: {}, branch: {}): {}", medicineId, orgId, branchId, e.getMessage(), e);
-            Thread.currentThread().interrupt(); // Restore interrupt status
-            throw new RuntimeException("Firestore transaction operation failed for medicine " + medicineId, e);
-        } catch (RuntimeException e) {
-            // Catch our custom RuntimeExceptions for specific validation failures
-            throw e;
-        }
+        transaction.update(
+                docRef,
+                "quantityInStock",
+                FieldValue.increment(delta)
+        );
     }
 }
 
