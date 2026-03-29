@@ -43,4 +43,12 @@ public interface StorefrontProductRepository {
             String organizationId,
             List<String> productIds);
 
+
+    public CursorPage<StorefrontProduct> findAllProduct(
+            String orgId,
+            String categoryId,
+            int pageSize,
+            String nextPageToken
+    );
+
 }

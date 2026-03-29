@@ -147,4 +147,29 @@ public class StorefrontProductRepositoryImpl
                     "Error fetching storefront products by productIds", e);
         }
     }
+
+    public CursorPage<StorefrontProduct> findAllProduct(
+            String orgId,
+            String categoryId,
+            int pageSize,
+            String nextPageToken
+    ) {
+
+        Query query = getCollection(orgId);
+
+        if (categoryId != null && !categoryId.isBlank()) {
+            query = query.whereEqualTo("categoryId", categoryId);
+        }
+
+        query = query
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .orderBy(FieldPath.documentId(), Query.Direction.DESCENDING);
+
+        return executePagedQuery(
+                query,
+                pageSize,
+                nextPageToken,
+                StorefrontProduct.class
+        );
+    }
 }
